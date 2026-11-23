@@ -6,6 +6,8 @@ import 'package:kover/pages/reader/epub_reader/epub_reader_controls.dart';
 import 'package:kover/pages/reader/image_reader/image_reader_controls.dart';
 import 'package:kover/pages/reader/overlay/page_slider.dart';
 import 'package:kover/pages/reader/pdf_reader/pdf_reader_controls.dart';
+import 'package:kover/riverpod/providers/tts/tts_engine.dart';
+import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/providers/reader/reader_navigation.dart';
 import 'package:kover/riverpod/providers/theme.dart';
@@ -70,6 +72,18 @@ class ReaderControls extends HookConsumerWidget {
                           .jumpToPage(page),
                     ),
                   ),
+                  if (format == .epub && ttsSupported)
+                    IconButton(
+                      icon: const Icon(KoverIcons.readAloud),
+                      tooltip: AppLocalizations.of(context).readAloud,
+                      onPressed: () => ref
+                          .read(ttsPlayerProvider.notifier)
+                          .start(
+                            seriesId: seriesId,
+                            chapterId: chapterId,
+                            readingListId: readingListId,
+                          ),
+                    ),
                   if (format == .epub)
                     ReaderSettingsButton(
                       child: EpubReaderSettingsBottomSheet(seriesId: seriesId),
@@ -99,34 +113,32 @@ class ReaderSettingsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final reduceAnimations = ref.watch(
-      themeProvider.select(
-        (value) =>
-            value.value?.reduceAnimations ??
-            const ThemeModel().reduceAnimations,
-      ),
-    );
-    final animation = reduceAnimations
-        ? const AnimationStyle(duration: .zero, reverseDuration: .zero)
-        : null;
-
     return IconButton(
       icon: const Icon(KoverIcons.readerSettings),
       tooltip: l.readerSettings,
-      onPressed: () {
-        showModalBottomSheet(
-          context: context,
-          showDragHandle: true,
-          isScrollControlled: true,
-          useSafeArea: true,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-            maxWidth: LayoutBreakpoints.medium,
-          ),
-          sheetAnimationStyle: animation,
-          builder: (context) => child,
-        );
-      },
+      onPressed: () => showReaderBottomSheet(context, ref, child),
     );
   }
+}
+
+/// Shows [child] in the modal bottom sheet used by the reader settings.
+void showReaderBottomSheet(BuildContext context, WidgetRef ref, Widget child) {
+  final reduceAnimations =
+      ref.read(themeProvider).value?.reduceAnimations ??
+      const ThemeModel().reduceAnimations;
+
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    useSafeArea: true,
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+      maxWidth: LayoutBreakpoints.medium,
+    ),
+    sheetAnimationStyle: reduceAnimations
+        ? const AnimationStyle(duration: .zero, reverseDuration: .zero)
+        : null,
+    builder: (context) => child,
+  );
 }

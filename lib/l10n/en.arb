@@ -1051,5 +1051,91 @@
     "removeBookmark": "Remove bookmark",
     "@removeBookmark": {
         "description": "Tooltip for removing a bookmark"
+    },
+    "readAloud": "Read aloud",
+    "@readAloud": {
+        "description": "Tooltip for the reader button that starts reading the book aloud, and title of the read aloud settings sheet"
+    },
+    "readAloudPlay": "Play",
+    "@readAloudPlay": {
+        "description": "Tooltip for the read aloud play button"
+    },
+    "readAloudPause": "Pause",
+    "@readAloudPause": {
+        "description": "Tooltip for the read aloud pause button"
+    },
+    "readAloudPreviousSentence": "Previous sentence",
+    "@readAloudPreviousSentence": {
+        "description": "Tooltip for the read aloud button that skips back one sentence"
+    },
+    "readAloudNextSentence": "Next sentence",
+    "@readAloudNextSentence": {
+        "description": "Tooltip for the read aloud button that skips forward one sentence"
+    },
+    "readAloudSpeed": "Speech speed {rate}x",
+    "@readAloudSpeed": {
+        "description": "Tooltip for the read aloud chip that cycles through speech speeds",
+        "placeholders": {
+            "rate": {
+                "type": "String",
+                "description": "The speech speed multiplier, e.g. 1.25"
+            }
+        }
+    },
+    "readAloudStop": "Stop reading aloud",
+    "@readAloudStop": {
+        "description": "Tooltip for the button that closes the read aloud player"
+    },
+    "readAloudLoading": "Preparing…",
+    "@readAloudLoading": {
+        "description": "Status line of the read aloud player while the text is being prepared"
+    },
+    "readAloudPlaying": "Reading aloud",
+    "@readAloudPlaying": {
+        "description": "Status line of the read aloud player while it is speaking"
+    },
+    "readAloudPaused": "Paused",
+    "@readAloudPaused": {
+        "description": "Status line of the read aloud player while it is paused"
+    },
+    "readAloudError": "Speech failed. Check the device text-to-speech settings.",
+    "@readAloudError": {
+        "description": "Status line of the read aloud player when the speech engine reported an error"
+    },
+    "readAloudSettings": "Read aloud settings",
+    "@readAloudSettings": {
+        "description": "Tooltip for the button that opens the read aloud settings"
+    },
+    "ttsEngine": "Engine",
+    "@ttsEngine": {
+        "description": "Label for the read aloud speech engine setting"
+    },
+    "ttsEngineDevice": "Device",
+    "@ttsEngineDevice": {
+        "description": "Name of the read aloud speech engine that uses the text-to-speech voices installed on the device"
+    },
+    "ttsVoice": "Voice",
+    "@ttsVoice": {
+        "description": "Label for the read aloud voice setting"
+    },
+    "ttsVoiceDefault": "Default",
+    "@ttsVoiceDefault": {
+        "description": "Option for the read aloud voice setting that uses the device default voice"
+    },
+    "ttsRate": "Speed",
+    "@ttsRate": {
+        "description": "Label for the read aloud speech speed setting"
+    },
+    "ttsPitch": "Pitch",
+    "@ttsPitch": {
+        "description": "Label for the read aloud speech pitch setting"
+    },
+    "ttsContinueNextChapter": "Continue to next chapter",
+    "@ttsContinueNextChapter": {
+        "description": "Label for the read aloud setting that keeps reading into the next chapter"
+    },
+    "ttsContinueNextChapterDescription": "Open the next chapter and keep reading when the current one ends.",
+    "@ttsContinueNextChapterDescription": {
+        "description": "Description for the read aloud continue to next chapter setting"
     }
 }

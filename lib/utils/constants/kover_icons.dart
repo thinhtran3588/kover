@@ -45,6 +45,17 @@ sealed class KoverIcons {
   static const IconData bookmarkOn = LucideIcons.bookmark;
   static const IconData bookmarkOff = LucideIcons.bookmarkOff;
 
+  // Read aloud
+  static const IconData readAloud = LucideIcons.headphones;
+  static const IconData ttsPlay = Icons.play_arrow_rounded;
+  static const IconData ttsPause = Icons.pause_rounded;
+  static const IconData ttsPrevious = LucideIcons.skipBack;
+  static const IconData ttsNext = LucideIcons.skipForward;
+  static const IconData ttsVoice = LucideIcons.mic;
+  static const IconData ttsRate = LucideIcons.gauge;
+  static const IconData ttsPitch = LucideIcons.audioLines;
+  static const IconData ttsNextChapter = LucideIcons.chevronsRight;
+
   // Appearance
   static const IconData animation = Icons.animation_sharp;
   static const IconData outline = LucideIcons.squareDashed;

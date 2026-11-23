@@ -10,9 +10,13 @@ import 'package:kover/pages/reader/epub_reader/paginated_epub_page/epub_anchor_t
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/paginated_epub_page.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/paginated_epub_page_controller.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page_provider.dart';
+import 'package:kover/pages/reader/epub_reader/tts/tts_player_bar.dart';
 import 'package:kover/pages/reader/overlay/reader_overlay.dart';
+import 'package:kover/riverpod/providers/reader.dart';
 import 'package:kover/riverpod/providers/reader/epub_reader.dart';
+import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/epub_reader_settings.dart';
+import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:kover/widgets/util/async_value.dart';
@@ -49,6 +53,45 @@ class EpubReader extends HookConsumerWidget {
       ).select((state) => state.value?.ignoreSafeAreas ?? true),
     );
 
+    final player = ref.read(ttsPlayerProvider.notifier);
+
+    // A reader opened by the end of the previous chapter carries on reading.
+    useEffect(() {
+      if (ref.read(ttsPlayerProvider).pendingAutoStart) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          player.start(
+            seriesId: seriesId,
+            chapterId: chapterId,
+            readingListId: readingListId,
+          );
+        });
+      }
+
+      return () => Future.microtask(() => player.onReaderDisposed(chapterId));
+    }, [chapterId]);
+
+    ref.listen(ttsPlayerProvider.select((state) => state.pendingAutoStart), (
+      previous,
+      pending,
+    ) async {
+      if (!pending) return;
+
+      final next = await ref.read(
+        nextChapterProvider(
+          seriesId: seriesId,
+          chapterId: chapterId,
+          readingListId: readingListId,
+        ).future,
+      );
+      if (!context.mounted || next == null) return;
+
+      ReaderRoute(
+        seriesId: seriesId,
+        chapterId: next.id,
+        readingListId: readingListId,
+      ).replace(context);
+    });
+
     return Async(
       asyncValue: model,
       data: (data) => ReaderOverlay(
@@ -56,6 +99,7 @@ class EpubReader extends HookConsumerWidget {
         chapterId: chapterId,
         readingListId: readingListId,
         disableGestures: hasSelection.value,
+        dock: TtsPlayerBar(seriesId: seriesId),
         onNextPage: () {
           ref.read(nav.notifier).nextPage();
         },
@@ -260,6 +304,42 @@ class _Page extends HookConsumerWidget {
         ref.read(nav.notifier).updateSubpageCount(page, count);
       },
     );
+
+    final ttsSegment = ref.watch(
+      ttsPlayerProvider.select((state) {
+        final cursor = state.cursor;
+        final reading = state.status == .playing || state.status == .paused;
+        return reading && cursor?.chapterId == chapterId && cursor?.page == page
+            ? cursor?.segment
+            : null;
+      }),
+    );
+    final ready = useListenableSelector(
+      controller,
+      () => controller.status == .ready,
+    );
+
+    // Highlight the sentence being read and bring its subpage into view. The
+    // jump goes through the controller, so progress is saved like a page turn.
+    useEffect(() {
+      if (!ready) return null;
+
+      var cancelled = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (cancelled || !context.mounted) return;
+
+        controller.highlightSegment(ttsSegment);
+        if (ttsSegment == null) return;
+
+        final target = controller.subpageForSegment(ttsSegment);
+        if (target != null && target != controller.currentSubpage) {
+          ref.read(ttsPlayerProvider.notifier).expectSubpage(target);
+          controller.jumpToSubpage(target);
+        }
+      });
+
+      return () => cancelled = true;
+    }, [controller, ready, ttsSegment]);
 
     final pendingAnchor = ref.watch(
       nav.select(

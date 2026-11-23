@@ -8,6 +8,8 @@ import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/node_indexing_operation.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/resume_highlight_operation.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/scroll_id_operation.dart';
+import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/tts_segment_operation.dart';
+import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/utils/constants/html_constants.dart';
 import 'package:kover/utils/extensions/document_fragment.dart';
 import 'package:material_ui/material_ui.dart';
@@ -31,6 +33,8 @@ class PaginatedEpubPageController({
   Size? _contentViewport;
   String? _initialXpath;
   dom.Element? _highlightedElement;
+  int? _activeSegment;
+  Map<int, List<dom.Element>>? _segmentWrappers;
   bool _resumePending = false;
   bool _animateSubpageChange = true;
   int? _pendingSubpage;
@@ -116,6 +120,7 @@ class PaginatedEpubPageController({
     final root = EpubPagePreprocessor(
       html: html,
       operations: [
+        if (ttsSupported) TtsSegmentOperation(),
         NodeIndexingOperation(),
         ScrollIdOperation(),
         ResumeHighlightOperation(
@@ -131,6 +136,8 @@ class PaginatedEpubPageController({
     );
     _settings = settings;
     _initialXpath = initialXpath;
+    _activeSegment = null;
+    _segmentWrappers = null;
     _highlightedElement = settings.highlightResumePoint
         ? _findByScrollId(root, initialXpath)
         : null;
@@ -168,6 +175,41 @@ class PaginatedEpubPageController({
     _cssEngine?.invalidate();
     _paginator?.invalidateSubpageCache();
     notifyListeners();
+  }
+
+  /// Highlights the read aloud [segment], or clears the highlight when null.
+  void highlightSegment(int? segment) {
+    if (segment == _activeSegment) return;
+
+    final root = _paginator?.root;
+    if (root == null) return;
+
+    final wrappers = _segmentWrappers ??= _groupSegmentWrappers(root);
+
+    for (final element in wrappers[_activeSegment] ?? const <dom.Element>[]) {
+      element.classes.remove(HtmlConstants.ttsActiveClass);
+    }
+    for (final element in wrappers[segment] ?? const <dom.Element>[]) {
+      element.classes.add(HtmlConstants.ttsActiveClass);
+    }
+    _activeSegment = segment;
+
+    _cssEngine?.invalidate();
+    _paginator?.invalidateSubpageCache();
+    notifyListeners();
+  }
+
+  /// The subpage to show for the read aloud [segment].
+  ///
+  /// In spreads the subpage is the first of the two shown together.
+  int? subpageForSegment(int segment) {
+    final subpage = _paginator?.subpageForSegment(
+      segment,
+      from: _currentSubpage,
+    );
+    if (subpage == null) return null;
+
+    return _settings?.mode == .spreads ? subpage - subpage % 2 : subpage;
   }
 
   /// Update the viewport size used for pagination.
@@ -275,6 +317,21 @@ class PaginatedEpubPageController({
     if (paginator == null || xpath == null) return null;
 
     return paginator.subpageForScrollId(xpath);
+  }
+
+  static Map<int, List<dom.Element>> _groupSegmentWrappers(
+    dom.DocumentFragment root,
+  ) {
+    final wrappers = <int, List<dom.Element>>{};
+    for (final element in root.querySelectorAll(
+      '[${HtmlConstants.ttsSegmentAttribute}]',
+    )) {
+      final index = int.tryParse(
+        element.attributes[HtmlConstants.ttsSegmentAttribute] ?? '',
+      );
+      if (index != null) (wrappers[index] ??= []).add(element);
+    }
+    return wrappers;
   }
 
   static dom.Element? _findByScrollId(

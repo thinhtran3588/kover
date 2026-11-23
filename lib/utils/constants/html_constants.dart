@@ -8,6 +8,9 @@ sealed class HtmlConstants {
   static const String startsMidBlockAttribute = 'kover-starts-mid-block';
   static const String trimStartAttribute = 'kover-trim-start';
   static const String trimEndAttribute = 'kover-trim-end';
+  static const String ttsSegmentTag = 'kover-tts';
+  static const String ttsSegmentAttribute = 'kover-tts-seg';
+  static const String ttsActiveClass = 'kover-tts-active';
 
   // Kavita-specific constants
   static const String kavitaWrapperClass = 'book-content';
