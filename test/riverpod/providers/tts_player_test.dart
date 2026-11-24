@@ -1,15 +1,18 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/models/chapter_model.dart';
 import 'package:kover/models/enums/format.dart';
 import 'package:kover/models/series_model.dart';
+import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/reader.dart';
 import 'package:kover/riverpod/providers/reader/epub_reader.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/providers/settings/epub_reader_settings.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
+import 'package:kover/riverpod/providers/tts/tts_audio_handler.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/riverpod/providers/tts/tts_segments.dart';
@@ -43,6 +46,18 @@ const _nextChapter = ChapterModel(
   pages: 2,
 );
 
+const _nextReaderState = ReaderState(
+  libraryId: 1,
+  series: _series,
+  chapter: _nextChapter,
+  readingListId: null,
+  volumeId: 1,
+  title: 'Next',
+  totalPages: 2,
+  initialPage: 0,
+  bookScrollId: null,
+);
+
 const _readerState = ReaderState(
   libraryId: 1,
   series: _series,
@@ -69,6 +84,8 @@ List<TtsSegment> _segments(String prefix, List<String> blocks) => [
 void main() {
   late _FakeEngine engine;
   late _FakeReader reader;
+  late _FakeReader nextReader;
+  late _FakeSync sync;
   late ProviderContainer container;
   late TtsPlayer player;
 
@@ -87,7 +104,9 @@ void main() {
 
   void setUpContainer({bool continueNext = true, bool hasNext = true}) {
     engine = _FakeEngine();
-    reader = _FakeReader();
+    reader = _FakeReader(_readerState);
+    nextReader = _FakeReader(_nextReaderState);
+    sync = _FakeSync();
     container = ProviderContainer.test(
       overrides: [
         readerProvider(
@@ -95,6 +114,19 @@ void main() {
           chapterId: 2,
           readingListId: null,
         ).overrideWith(() => reader),
+        readerProvider(
+          seriesId: 1,
+          chapterId: 3,
+          readingListId: null,
+        ).overrideWith(() => nextReader),
+        syncManagerProvider.overrideWith(() => sync),
+        // The media session needs the platform.
+        ttsAudioHandlerProvider.overrideWith(
+          (_) => Completer<TtsAudioHandler>().future,
+        ),
+        ttsSegmentsProvider(chapterId: 3, page: 0).overrideWith(
+          (_) => _segments('n0-', ['x', 'y']),
+        ),
         epubReaderSettingsProvider(
           seriesId: 1,
         ).overrideWithBuild((_, _) => const EpubReaderSettingsState()),
@@ -269,6 +301,132 @@ void main() {
     expect(container.read(ttsPlayerProvider).status, TtsStatus.idle);
   });
 
+  group('without a reader on screen', () {
+    Future<void> finishChapter() async {
+      for (var i = 0; i < 5; i++) {
+        engine.finish();
+        await pump();
+      }
+      await pump();
+    }
+
+    test('saves progress per block and turns the page itself', () async {
+      await container.read(_nav.future);
+      await startReading(scrollId: 'a');
+      player.background = true;
+      reader.savedScrollIds.clear();
+
+      engine.finish();
+      await pump();
+      engine.finish();
+      await pump();
+      expect(reader.savedScrollIds, ['a', 'b']);
+
+      engine.finish();
+      await pump();
+      expect(reader.saved.take(2), [0, 0]);
+      expect(reader.saved.skip(2), everyElement(1));
+      expect(container.read(_nav).requireValue.page, 1);
+    });
+
+    test('completes the chapter and opens the next one', () async {
+      await container.read(_nav.future);
+      await startReading(scrollId: 'a');
+      player.background = true;
+
+      await finishChapter();
+
+      final state = container.read(ttsPlayerProvider);
+      expect(reader.completed, 1);
+      expect(state.pendingAutoStart, isFalse);
+      expect(state.cursor?.chapterId, 3);
+      expect(state.status, TtsStatus.playing);
+      expect(engine.spoken.last, 'n0-0');
+      expect(nextReader.savedScrollIds, ['x']);
+      expect(sync.progressSyncs, 1);
+
+      // The reader opened on return follows the player.
+      player.background = false;
+      final nextNav = epubNavigationProvider(
+        seriesId: 1,
+        chapterId: 3,
+        readingListId: null,
+      );
+      final subscription = container.listen(nextNav, (_, _) {});
+      addTearDown(subscription.close);
+      await container.read(nextNav.future);
+      container.read(nextNav.notifier).updateSubpageCount(0, 1);
+      await player.attachReader(
+        seriesId: 1,
+        chapterId: 3,
+        readingListId: null,
+      );
+
+      expect(engine.spoken.where((s) => s.startsWith('n0-')), ['n0-0']);
+      expect(container.read(ttsPlayerProvider).status, TtsStatus.playing);
+    });
+
+    test('completes the last chapter and stops', () async {
+      setUpContainer(hasNext: false);
+      await container.read(_nav.future);
+      await startReading(scrollId: 'a');
+      player.background = true;
+
+      await finishChapter();
+
+      expect(reader.completed, 1);
+      expect(container.read(ttsPlayerProvider).status, TtsStatus.idle);
+      expect(sync.progressSyncs, 1);
+    });
+  });
+
+  group('media session handler', () {
+    test('mirrors the player state', () async {
+      await container.read(_nav.future);
+      await startReading(scrollId: 'a');
+      final handler = TtsAudioHandler(player);
+
+      handler.update(container.read(ttsPlayerProvider));
+      var state = handler.playbackState.value;
+      expect(state.playing, isTrue);
+      expect(state.processingState, AudioProcessingState.ready);
+      expect(state.controls, [
+        MediaControl.skipToPrevious,
+        MediaControl.pause,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+      ]);
+      expect(state.androidCompactActionIndices, [0, 1, 2]);
+
+      await player.pause();
+      handler.update(container.read(ttsPlayerProvider));
+      state = handler.playbackState.value;
+      expect(state.playing, isFalse);
+      expect(state.controls[1], MediaControl.play);
+    });
+
+    test('forwards the media buttons to the player', () async {
+      await container.read(_nav.future);
+      await startReading(scrollId: 'a');
+      final handler = TtsAudioHandler(player);
+
+      await handler.skipToNext();
+      expect(engine.spoken.last, 'p0-1');
+      await handler.skipToPrevious();
+      expect(engine.spoken.last, 'p0-0');
+      await handler.pause();
+      expect(container.read(ttsPlayerProvider).status, TtsStatus.paused);
+      await handler.play();
+      expect(container.read(ttsPlayerProvider).status, TtsStatus.playing);
+      await handler.stop();
+      expect(container.read(ttsPlayerProvider).status, TtsStatus.idle);
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.idle,
+      );
+    });
+  });
+
   test('stop goes idle and the reader dispose stops the session', () async {
     await container.read(_nav.future);
     await startReading();
@@ -308,15 +466,30 @@ class _FakeEngine implements TtsEngine {
   }
 }
 
+class _FakeSync extends SyncManager {
+  var progressSyncs = 0;
+
+  @override
+  SyncState build() => const SyncState.idle();
+
+  @override
+  void syncProgress() => progressSyncs++;
+}
+
 class _FakeReader extends Reader {
+  final ReaderState _state;
   final saved = <int>[];
+  final savedScrollIds = <String?>[];
+  var completed = 0;
+
+  _FakeReader(this._state);
 
   @override
   Future<ReaderState> build({
     required int seriesId,
     required int chapterId,
     required int? readingListId,
-  }) async => _readerState;
+  }) async => _state;
 
   @override
   Future<void> saveProgress({
@@ -325,8 +498,9 @@ class _FakeReader extends Reader {
     bool handleCompletion = true,
   }) async {
     saved.add(page);
+    savedScrollIds.add(scrollId);
   }
 
   @override
-  Future<void> markComplete() async {}
+  Future<void> markComplete() async => completed++;
 }

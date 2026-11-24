@@ -1137,5 +1137,9 @@
     "ttsContinueNextChapterDescription": "Open the next chapter and keep reading when the current one ends.",
     "@ttsContinueNextChapterDescription": {
         "description": "Description for the read aloud continue to next chapter setting"
+    },
+    "readAloudNotificationChannel": "Read aloud playback",
+    "@readAloudNotificationChannel": {
+        "description": "Name of the notification channel for the media controls shown while reading aloud"
     }
 }

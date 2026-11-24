@@ -65,10 +65,35 @@ class EpubReader extends HookConsumerWidget {
             readingListId: readingListId,
           );
         });
+      } else {
+        player.attachReader(
+          seriesId: seriesId,
+          chapterId: chapterId,
+          readingListId: readingListId,
+        );
       }
 
       return () => Future.microtask(() => player.onReaderDisposed(chapterId));
     }, [chapterId]);
+
+    // The player carries on into the next chapter while the app is in the
+    // background, so this reader may be showing a chapter already finished.
+    useOnAppLifecycleStateChange((_, state) {
+      if (state != .resumed || !context.mounted) return;
+
+      final cursor = ref.read(ttsPlayerProvider).cursor;
+      if (cursor == null ||
+          cursor.seriesId != seriesId ||
+          cursor.chapterId == chapterId) {
+        return;
+      }
+
+      ReaderRoute(
+        seriesId: seriesId,
+        chapterId: cursor.chapterId,
+        readingListId: readingListId,
+      ).replace(context);
+    });
 
     ref.listen(ttsPlayerProvider.select((state) => state.pendingAutoStart), (
       previous,

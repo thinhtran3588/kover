@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:kover/riverpod/providers/reader.dart';
+import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/reader/epub_reader.dart';
+import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
 import 'package:kover/riverpod/providers/tts/native_tts_engine.dart';
+import 'package:kover/riverpod/providers/tts/tts_audio_handler.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_segments.dart';
 import 'package:kover/utils/logging.dart';
@@ -44,13 +48,18 @@ Future<List<TtsVoice>> ttsVoices(Ref ref) =>
 
 /// Reads an EPUB aloud sentence by sentence.
 ///
-/// The player only moves the reading position through [EpubNavigation], so
-/// reading progress is saved by the same path as when turning pages.
+/// While the reader is on screen the player only moves the reading position
+/// through [EpubNavigation], so reading progress is saved by the same path as
+/// when turning pages. Without a visible reader (screen off, app in the
+/// background) nothing updates that position, so the player saves progress,
+/// completes chapters and opens the next one itself.
 @Riverpod(keepAlive: true)
 class TtsPlayer extends _$TtsPlayer {
   List<TtsSegment> _segments = const [];
   StreamSubscription<TtsEvent>? _speech;
   ProviderSubscription<AsyncValue<EpubNavigationState>>? _navSubscription;
+  ProviderSubscription<AsyncValue<ReaderState>>? _readerSubscription;
+  var _background = false;
   var _generation = 0;
   int? _expectedPage;
   int? _expectedSubpage;
@@ -59,12 +68,32 @@ class TtsPlayer extends _$TtsPlayer {
 
   @override
   TtsPlayerState build() {
+    final lifecycle = AppLifecycleListener(
+      onStateChange: (state) => _background = switch (state) {
+        .hidden || .paused || .detached => true,
+        .resumed || .inactive => false,
+      },
+    );
     ref.onDispose(() {
+      lifecycle.dispose();
       _speech?.cancel();
       _navSubscription?.close();
+      _readerSubscription?.close();
     });
     return TtsPlayerState();
   }
+
+  /// Whether no reader is on screen to follow the reading position.
+  bool get _detached => _background || _navSubscription == null;
+
+  @visibleForTesting
+  set background(bool value) => _background = value;
+
+  ReaderProvider _readerProvider(TtsCursor cursor) => readerProvider(
+    seriesId: cursor.seriesId,
+    chapterId: cursor.chapterId,
+    readingListId: cursor.readingListId,
+  );
 
   TtsEngine get _engine => ref.read(ttsEngineProvider);
 
@@ -86,6 +115,7 @@ class TtsPlayer extends _$TtsPlayer {
   }) async {
     await _interrupt();
     final generation = _generation;
+    _startMediaSession();
 
     final nav = epubNavigationProvider(
       seriesId: seriesId,
@@ -112,13 +142,56 @@ class TtsPlayer extends _$TtsPlayer {
     _expectedSubpage = navState.subpage;
     _awaitingPosition = false;
     _keepPaused = false;
+    _readerSubscription?.close();
+    _readerSubscription = null;
+    _listenNavigation(nav);
+
+    await _enterPage(navState.page, scrollId: navState.scrollId);
+  }
+
+  /// Follows the reader of the chapter being read when it comes on screen
+  /// again after the player carried on without it.
+  Future<void> attachReader({
+    required int seriesId,
+    required int chapterId,
+    required int? readingListId,
+  }) async {
+    final cursor = state.cursor;
+    if (cursor == null ||
+        state.status == .idle ||
+        cursor.chapterId != chapterId ||
+        _navSubscription != null) {
+      return;
+    }
+    final generation = _generation;
+    final nav = epubNavigationProvider(
+      seriesId: seriesId,
+      chapterId: chapterId,
+      readingListId: readingListId,
+    );
+
+    final navState = await _readyNavState(nav);
+    if (generation != _generation || _navSubscription != null) return;
+
+    final page = state.cursor!.page;
+    _expectedPage = navState.page == page ? null : page;
+    _expectedSubpage = navState.subpage;
+    _listenNavigation(nav);
+    if (navState.page != page) {
+      await _navNotifier(state.cursor!).jumpToPage(page, force: true);
+    }
+  }
+
+  void _listenNavigation(EpubNavigationProvider nav) {
     _navSubscription?.close();
     _navSubscription = ref.listen(nav, (previous, next) {
       final data = next.value;
       if (data != null) _onNavigation(previous?.value, data);
     });
+  }
 
-    await _enterPage(navState.page, scrollId: navState.scrollId);
+  void _startMediaSession() {
+    ref.read(ttsAudioHandlerProvider.future).ignore();
   }
 
   /// Tells the player which subpage the reader is about to show for the
@@ -170,12 +243,18 @@ class TtsPlayer extends _$TtsPlayer {
   }
 
   Future<void> stop() async {
+    final wasReading = state.cursor != null;
     await _interrupt();
     _navSubscription?.close();
     _navSubscription = null;
+    _readerSubscription?.close();
+    _readerSubscription = null;
     _segments = const [];
     state = TtsPlayerState();
+    if (wasReading) _syncProgress();
   }
+
+  void _syncProgress() => ref.read(syncManagerProvider.notifier).syncProgress();
 
   /// Stops reading when the reader of [chapterId] goes away, unless the
   /// player is handing over to the next chapter's reader.
@@ -278,6 +357,7 @@ class TtsPlayer extends _$TtsPlayer {
       status: .playing,
       cursor: cursor.copyWith(segment: index),
     );
+    if (_detached) unawaited(_saveProgress(cursor, _segments[index]));
 
     _speech = _engine
         .speak(
@@ -309,6 +389,24 @@ class TtsPlayer extends _$TtsPlayer {
         );
   }
 
+  Future<void> _saveProgress(TtsCursor cursor, TtsSegment segment) async {
+    try {
+      await ref
+          .read(_readerProvider(cursor).notifier)
+          .saveProgress(
+            page: cursor.page,
+            scrollId: segment.blockScrollId,
+            handleCompletion: false,
+          );
+    } catch (error, stacktrace) {
+      log.error(
+        'tts save progress failed',
+        error: error,
+        stacktrace: stacktrace,
+      );
+    }
+  }
+
   void _segmentDone(int index) {
     if (index + 1 < _segments.length) {
       _speakAt(index + 1);
@@ -328,17 +426,25 @@ class TtsPlayer extends _$TtsPlayer {
     final cursor = state.cursor;
     if (cursor == null) return;
     final generation = _generation;
-    final nav = _navNotifier(cursor);
-    final navState = await ref.read(_navProvider(cursor).future);
+    final reader = await ref.read(_readerProvider(cursor).future);
     if (generation != _generation) return;
 
-    if (cursor.page + 1 < navState.totalPages) {
-      _expectedPage = cursor.page + 1;
-      _expectedSubpage = 0;
-      await nav.jumpToPage(cursor.page + 1, force: true);
-      if (generation != _generation) return;
+    if (cursor.page + 1 < reader.totalPages) {
+      if (_navSubscription != null) {
+        _expectedPage = cursor.page + 1;
+        _expectedSubpage = 0;
+        await _navNotifier(cursor).jumpToPage(cursor.page + 1, force: true);
+        if (generation != _generation) return;
+      }
       await _enterPage(cursor.page + 1);
       return;
+    }
+
+    // The reader marks the chapter complete when it reaches its end.
+    final detached = _detached;
+    if (detached) {
+      await ref.read(_readerProvider(cursor).notifier).markComplete();
+      if (generation != _generation) return;
     }
 
     final settings =
@@ -360,7 +466,40 @@ class TtsPlayer extends _$TtsPlayer {
       return;
     }
 
+    _syncProgress();
+    if (detached) {
+      await _openChapter(cursor, nextChapter.id);
+      return;
+    }
     state = state.copyWith(status: .loading, pendingAutoStart: true);
+  }
+
+  /// Carries on with [chapterId] without a reader, which is opened when the
+  /// app comes back to the foreground.
+  Future<void> _openChapter(TtsCursor from, int chapterId) async {
+    final generation = _generation;
+    final cursor = TtsCursor(
+      seriesId: from.seriesId,
+      chapterId: chapterId,
+      readingListId: from.readingListId,
+      page: 0,
+      segment: 0,
+    );
+    _navSubscription?.close();
+    _navSubscription = null;
+    _expectedPage = null;
+    _expectedSubpage = 0;
+    _awaitingPosition = false;
+    _segments = const [];
+    state = TtsPlayerState(status: .loading, cursor: cursor);
+
+    // Saving progress needs the chapter's reader, which nothing else keeps.
+    _readerSubscription?.close();
+    _readerSubscription = ref.listen(_readerProvider(cursor), (_, _) {});
+    await ref.read(_readerProvider(cursor).future);
+    if (generation != _generation) return;
+
+    await _enterPage(0);
   }
 
   void _onNavigation(EpubNavigationState? previous, EpubNavigationState next) {
