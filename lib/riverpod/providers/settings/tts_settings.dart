@@ -11,6 +11,9 @@ part 'tts_settings.g.dart';
 enum TtsEngineType {
   /// The text-to-speech voices installed on the device.
   device,
+
+  /// Microsoft Edge's online neural voices.
+  edge,
 }
 
 sealed class TtsSettingsLimits {
@@ -54,7 +57,9 @@ class TtsSettings extends _$TtsSettings {
   Future<void> setEngine(TtsEngineType engine) async {
     final current = await future;
 
-    state = AsyncData(current.copyWith(engine: engine));
+    state = AsyncData(
+      current.copyWith(engine: engine, voiceName: null, voiceLocale: null),
+    );
     log.info('set engine', attributes: {'value': engine, 'reader': 'tts'});
   }
 

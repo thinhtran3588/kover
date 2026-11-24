@@ -1106,6 +1106,10 @@
     "@readAloudSettings": {
         "description": "Tooltip for the button that opens the read aloud settings"
     },
+    "readAloudErrorOnline": "Online speech failed. Check your internet connection.",
+    "@readAloudErrorOnline": {
+        "description": "Status line of the read aloud player when the online speech engine reported an error"
+    },
     "ttsEngine": "Engine",
     "@ttsEngine": {
         "description": "Label for the read aloud speech engine setting"
@@ -1113,6 +1117,14 @@
     "ttsEngineDevice": "Device",
     "@ttsEngineDevice": {
         "description": "Name of the read aloud speech engine that uses the text-to-speech voices installed on the device"
+    },
+    "ttsEngineEdge": "Edge (online)",
+    "@ttsEngineEdge": {
+        "description": "Name of the read aloud speech engine that uses the online voices of Microsoft Edge"
+    },
+    "ttsEngineEdgeDescription": "Natural online voices. The text being read is sent to Microsoft.",
+    "@ttsEngineEdgeDescription": {
+        "description": "Privacy note shown under the read aloud engine setting when the online Microsoft Edge engine is available"
     },
     "ttsVoice": "Voice",
     "@ttsVoice": {

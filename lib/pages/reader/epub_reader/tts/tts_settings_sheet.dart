@@ -56,6 +56,9 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                       ),
                       ChoiceOption<TtsEngineType>(
                         title: l.ttsEngine,
+                        description: edgeTtsSupported
+                            ? l.ttsEngineEdgeDescription
+                            : null,
                         value: settings.engine,
                         options: [
                           ChoiceOptionEntry(
@@ -63,6 +66,12 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                             label: l.ttsEngineDevice,
                             icon: KoverIcons.readAloud,
                           ),
+                          if (edgeTtsSupported)
+                            ChoiceOptionEntry(
+                              value: .edge,
+                              label: l.ttsEngineEdge,
+                              icon: KoverIcons.ttsOnline,
+                            ),
                         ],
                         onChanged: notifier.setEngine,
                       ),

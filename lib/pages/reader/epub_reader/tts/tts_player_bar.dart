@@ -3,6 +3,7 @@ import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/pages/reader/epub_reader/tts/tts_settings_sheet.dart';
 import 'package:kover/pages/reader/overlay/reader_controls.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
+import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
@@ -30,6 +31,9 @@ class TtsPlayerBar extends ConsumerWidget {
       ttsSettingsProvider.select(
         (s) => s.value?.rate ?? const TtsSettingsState().rate,
       ),
+    );
+    final online = ref.watch(
+      ttsSettingsProvider.select((s) => s.value?.engine == .edge),
     );
     final rail =
         MediaQuery.sizeOf(context).height < LayoutConstants.dockRailHeight;
@@ -94,7 +98,8 @@ class TtsPlayerBar extends ConsumerWidget {
       .loading => l.readAloudLoading,
       .playing => l.readAloudPlaying,
       .paused => l.readAloudPaused,
-      .error => l.readAloudError,
+      .error =>
+        online && edgeTtsSupported ? l.readAloudErrorOnline : l.readAloudError,
       .idle => '',
     };
 

@@ -3,6 +3,12 @@ import 'package:kover/utils/safe_platform.dart';
 /// Whether the platform has a native text-to-speech engine.
 bool get ttsSupported => !SafePlatform.isLinux;
 
+/// Whether the Edge online voices can be used: they need custom WebSocket
+/// headers, which the web cannot send, and an audio player that is not
+/// available on Windows.
+bool get edgeTtsSupported =>
+    SafePlatform.isAndroid || SafePlatform.isIOS || SafePlatform.isMacOS;
+
 class const TtsVoice({
   required final String name,
   required final String locale,

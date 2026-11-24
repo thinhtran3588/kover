@@ -9,6 +9,7 @@ import 'package:kover/riverpod/providers/reader/epub_reader.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/providers/series.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
+import 'package:kover/riverpod/providers/tts/edge_tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/native_tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_segments.dart';
@@ -40,7 +41,17 @@ class TtsPlayerState({
 }) with _$TtsPlayerState;
 
 @Riverpod(keepAlive: true)
-TtsEngine ttsEngine(Ref ref) => NativeTtsEngine();
+TtsEngine ttsEngine(Ref ref) {
+  final type = ref.watch(ttsSettingsProvider.select((s) => s.value?.engine));
+  if (type == .edge && edgeTtsSupported) {
+    final engine = EdgeTtsEngine();
+    ref.onDispose(engine.dispose);
+    return engine;
+  }
+  final engine = NativeTtsEngine();
+  ref.onDispose(engine.stop);
+  return engine;
+}
 
 /// The language of the series, which picks the voice when none is selected.
 @riverpod
@@ -89,6 +100,10 @@ class TtsPlayer extends _$TtsPlayer {
       _speech?.cancel();
       _navSubscription?.close();
       _readerSubscription?.close();
+    });
+    // The engine changed, so continue with the new one.
+    ref.listen(ttsEngineProvider, (_, _) {
+      if (state.status == .playing) unawaited(resume());
     });
     return TtsPlayerState();
   }
