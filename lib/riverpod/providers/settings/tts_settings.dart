@@ -38,7 +38,7 @@ sealed class TtsSettingsState with _$TtsSettingsState {
 }
 
 /// Global read aloud settings, shared by all series.
-@riverpod
+@Riverpod(keepAlive: true)
 @JsonPersist()
 class TtsSettings extends _$TtsSettings {
   @override

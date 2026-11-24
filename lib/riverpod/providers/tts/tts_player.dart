@@ -35,7 +35,7 @@ class TtsPlayerState({
   final bool pendingAutoStart = false,
 }) with _$TtsPlayerState;
 
-@riverpod
+@Riverpod(keepAlive: true)
 TtsEngine ttsEngine(Ref ref) => NativeTtsEngine();
 
 @riverpod
