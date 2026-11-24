@@ -94,3 +94,7 @@ sentry:
   upload_source_maps: true
   project: kover
   org: rodonisi
+
+dependency_overrides:
+  flutter_tts:
+    path: third_party/flutter_tts
