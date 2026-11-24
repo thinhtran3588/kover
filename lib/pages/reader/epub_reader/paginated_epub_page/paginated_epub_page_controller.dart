@@ -199,6 +199,10 @@ class PaginatedEpubPageController({
     notifyListeners();
   }
 
+  /// The first read aloud segment shown on subpage [index].
+  int? firstSegmentOnSubpage(int index) =>
+      _status == .ready ? _paginator?.firstSegment(index) : null;
+
   /// The subpage to show for the read aloud [segment].
   ///
   /// In spreads the subpage is the first of the two shown together.

@@ -13,6 +13,9 @@ class const TtsUtterance({
   final String? voiceName,
   final String? voiceLocale,
 
+  /// The language of the text, used to pick a voice when none is selected.
+  final String? language,
+
   /// Speed multiplier, 1.0 being the normal speed.
   final double rate = 1.0,
   final double pitch = 1.0,

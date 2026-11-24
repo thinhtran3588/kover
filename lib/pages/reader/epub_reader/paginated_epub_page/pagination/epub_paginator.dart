@@ -134,6 +134,9 @@ class EpubPaginator({required final dom.DocumentFragment root}) {
     return null;
   }
 
+  /// The first read aloud segment shown on [index].
+  int? firstSegment(int index) => _segmentRange(index)?.$1;
+
   /// The lowest and highest read aloud segment on [index], computed lazily.
   (int, int)? _segmentRange(int index) {
     if (_subpageSegments.containsKey(index)) return _subpageSegments[index];

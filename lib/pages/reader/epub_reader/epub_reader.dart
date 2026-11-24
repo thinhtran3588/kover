@@ -117,6 +117,10 @@ class EpubReader extends HookConsumerWidget {
       ).replace(context);
     });
 
+    final reading = ref.watch(
+      ttsPlayerProvider.select((state) => state.status != .idle),
+    );
+
     return Async(
       asyncValue: model,
       data: (data) => ReaderOverlay(
@@ -124,7 +128,7 @@ class EpubReader extends HookConsumerWidget {
         chapterId: chapterId,
         readingListId: readingListId,
         disableGestures: hasSelection.value,
-        dock: TtsPlayerBar(seriesId: seriesId),
+        dock: reading ? TtsPlayerBar(seriesId: seriesId) : null,
         onNextPage: () {
           ref.read(nav.notifier).nextPage();
         },
@@ -343,6 +347,18 @@ class _Page extends HookConsumerWidget {
       controller,
       () => controller.status == .ready,
     );
+
+    // Lets the player start from the first sentence on screen, which may be
+    // in the middle of the block the position points at.
+    useEffect(() {
+      final player = ref.read(ttsPlayerProvider.notifier);
+      int? locate(int chapter, int p, int subpage) =>
+          chapter == chapterId && p == page
+          ? controller.firstSegmentOnSubpage(subpage)
+          : null;
+      player.segmentLocators.add(locate);
+      return () => player.segmentLocators.remove(locate);
+    }, [controller, chapterId, page]);
 
     // Highlight the sentence being read and bring its subpage into view. The
     // jump goes through the controller, so progress is saved like a page turn.

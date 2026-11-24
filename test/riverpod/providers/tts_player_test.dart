@@ -120,10 +120,7 @@ void main() {
           readingListId: null,
         ).overrideWith(() => nextReader),
         syncManagerProvider.overrideWith(() => sync),
-        // The media session needs the platform.
-        ttsAudioHandlerProvider.overrideWith(
-          (_) => Completer<TtsAudioHandler>().future,
-        ),
+        ttsLanguageProvider(seriesId: 1).overrideWith((_) async => null),
         ttsSegmentsProvider(chapterId: 3, page: 0).overrideWith(
           (_) => _segments('n0-', ['x', 'y']),
         ),

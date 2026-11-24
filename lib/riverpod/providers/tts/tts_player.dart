@@ -7,9 +7,9 @@ import 'package:kover/riverpod/providers/reader.dart';
 import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/reader/epub_reader.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
+import 'package:kover/riverpod/providers/series.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
 import 'package:kover/riverpod/providers/tts/native_tts_engine.dart';
-import 'package:kover/riverpod/providers/tts/tts_audio_handler.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_segments.dart';
 import 'package:kover/utils/logging.dart';
@@ -42,6 +42,12 @@ class TtsPlayerState({
 @Riverpod(keepAlive: true)
 TtsEngine ttsEngine(Ref ref) => NativeTtsEngine();
 
+/// The language of the series, which picks the voice when none is selected.
+@riverpod
+Future<String?> ttsLanguage(Ref ref, {required int seriesId}) async =>
+    (await ref.watch(seriesMetadataProvider(seriesId: seriesId).future))
+        .language;
+
 @riverpod
 Future<List<TtsVoice>> ttsVoices(Ref ref) =>
     ref.watch(ttsEngineProvider).voices();
@@ -65,6 +71,10 @@ class TtsPlayer extends _$TtsPlayer {
   int? _expectedSubpage;
   var _awaitingPosition = false;
   var _keepPaused = false;
+  String? _language;
+
+  /// Finds the first segment shown on a subpage of a page on screen.
+  final segmentLocators = <int? Function(int chapter, int page, int subpage)>{};
 
   @override
   TtsPlayerState build() {
@@ -115,7 +125,6 @@ class TtsPlayer extends _$TtsPlayer {
   }) async {
     await _interrupt();
     final generation = _generation;
-    _startMediaSession();
 
     final nav = epubNavigationProvider(
       seriesId: seriesId,
@@ -133,6 +142,7 @@ class TtsPlayer extends _$TtsPlayer {
       ),
     );
 
+    _language = await _seriesLanguage(seriesId);
     final navState = await _readyNavState(nav);
     if (generation != _generation) return;
 
@@ -146,7 +156,35 @@ class TtsPlayer extends _$TtsPlayer {
     _readerSubscription = null;
     _listenNavigation(nav);
 
-    await _enterPage(navState.page, scrollId: navState.scrollId);
+    await _enterPage(
+      navState.page,
+      scrollId: navState.scrollId,
+      segment: _locateSegment(navState.page, navState.subpage),
+    );
+  }
+
+  int? _locateSegment(int page, int subpage) {
+    final chapter = state.cursor?.chapterId;
+    if (chapter == null) return null;
+    for (final locate in segmentLocators) {
+      final segment = locate(chapter, page, subpage);
+      if (segment != null) return segment;
+    }
+    return null;
+  }
+
+  Future<String?> _seriesLanguage(int seriesId) async {
+    final provider = ttsLanguageProvider(seriesId: seriesId);
+    // Keeps the auto-disposed provider alive while it loads.
+    final keepAlive = ref.listen(provider, (_, _) {});
+    try {
+      return await ref.read(provider.future);
+    } catch (error, stacktrace) {
+      log.error('tts language failed', error: error, stacktrace: stacktrace);
+      return null;
+    } finally {
+      keepAlive.close();
+    }
   }
 
   /// Follows the reader of the chapter being read when it comes on screen
@@ -188,10 +226,6 @@ class TtsPlayer extends _$TtsPlayer {
       final data = next.value;
       if (data != null) _onNavigation(previous?.value, data);
     });
-  }
-
-  void _startMediaSession() {
-    ref.read(ttsAudioHandlerProvider.future).ignore();
   }
 
   /// Tells the player which subpage the reader is about to show for the
@@ -297,6 +331,7 @@ class TtsPlayer extends _$TtsPlayer {
   Future<void> _enterPage(
     int page, {
     String? scrollId,
+    int? segment,
     bool play = true,
   }) async {
     final generation = _generation;
@@ -331,19 +366,21 @@ class TtsPlayer extends _$TtsPlayer {
       return;
     }
 
-    final index = scrollId == null
+    final index = segment != null && segment < segments.length
+        ? segment
+        : scrollId == null
         ? 0
         : segments.indexWhere((s) => s.blockScrollId == scrollId);
-    final segment = index < 0 ? 0 : index;
+    final start = index < 0 ? 0 : index;
     if (!play) {
       state = state.copyWith(
         status: .paused,
-        cursor: cursor.copyWith(page: page, segment: segment),
+        cursor: cursor.copyWith(page: page, segment: start),
       );
       return;
     }
     state = state.copyWith(cursor: cursor.copyWith(page: page, segment: 0));
-    _speakAt(segment);
+    _speakAt(start);
   }
 
   void _speakAt(int index) {
@@ -365,6 +402,7 @@ class TtsPlayer extends _$TtsPlayer {
             text: _segments[index].text,
             voiceName: settings.voiceName,
             voiceLocale: settings.voiceLocale,
+            language: _language,
             rate: settings.rate,
             pitch: settings.pitch,
           ),
@@ -510,7 +548,7 @@ class TtsPlayer extends _$TtsPlayer {
       if (next.page == cursor.page && next.scrollId != null) {
         _awaitingPosition = false;
         _expectedSubpage = next.subpage;
-        unawaited(_restart(next.page, next.scrollId));
+        unawaited(_restart(next.page, next.subpage, next.scrollId));
       }
       return;
     }
@@ -547,13 +585,18 @@ class TtsPlayer extends _$TtsPlayer {
       );
       return;
     }
-    unawaited(_restart(next.page, next.scrollId));
+    unawaited(_restart(next.page, next.subpage, next.scrollId));
   }
 
-  Future<void> _restart(int page, String? scrollId) async {
+  Future<void> _restart(int page, int subpage, String? scrollId) async {
     await _interrupt();
     final play = !_keepPaused;
     _keepPaused = false;
-    await _enterPage(page, scrollId: scrollId, play: play);
+    await _enterPage(
+      page,
+      scrollId: scrollId,
+      segment: _locateSegment(page, subpage),
+      play: play,
+    );
   }
 }

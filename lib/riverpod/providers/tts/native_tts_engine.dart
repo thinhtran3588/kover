@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/utils/safe_platform.dart';
@@ -10,6 +11,7 @@ class NativeTtsEngine implements TtsEngine {
   final FlutterTts _tts = FlutterTts();
   var _configured = false;
   var _generation = 0;
+  List<TtsVoice>? _voices;
 
   @override
   bool get supportsWordBoundaries => false;
@@ -43,6 +45,12 @@ class NativeTtsEngine implements TtsEngine {
         'name': utterance.voiceName!,
         'locale': utterance.voiceLocale!,
       });
+    } else if (utterance.language case final language?) {
+      // The default voice follows the device language, not the book's.
+      final voice = await _voiceFor(language);
+      if (voice != null) {
+        await _tts.setVoice({'name': voice.name, 'locale': voice.locale});
+      }
     }
     await _tts.setSpeechRate(_platformRate(utterance.rate));
     await _tts.setPitch(utterance.pitch);
@@ -58,6 +66,17 @@ class NativeTtsEngine implements TtsEngine {
         ? const TtsDone()
         : const TtsError(message: 'speech engine failed');
   }
+
+  Future<TtsVoice?> _voiceFor(String language) async {
+    final primary = _primary(language);
+    _voices ??= await voices();
+    return _voices!.firstWhereOrNull(
+      (voice) => _primary(voice.locale) == primary,
+    );
+  }
+
+  static String _primary(String locale) =>
+      locale.split(RegExp('[-_]')).first.toLowerCase();
 
   @override
   Future<void> stop() async {

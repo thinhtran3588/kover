@@ -6,6 +6,7 @@ import 'package:kover/pages/reader/epub_reader/epub_reader_controls.dart';
 import 'package:kover/pages/reader/image_reader/image_reader_controls.dart';
 import 'package:kover/pages/reader/overlay/page_slider.dart';
 import 'package:kover/pages/reader/pdf_reader/pdf_reader_controls.dart';
+import 'package:kover/riverpod/providers/tts/tts_audio_handler.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
@@ -76,13 +77,18 @@ class ReaderControls extends HookConsumerWidget {
                     IconButton(
                       icon: const Icon(KoverIcons.readAloud),
                       tooltip: AppLocalizations.of(context).readAloud,
-                      onPressed: () => ref
-                          .read(ttsPlayerProvider.notifier)
-                          .start(
-                            seriesId: seriesId,
-                            chapterId: chapterId,
-                            readingListId: readingListId,
-                          ),
+                      onPressed: () {
+                        // Started here, as the media session depends on the
+                        // player.
+                        ref.read(ttsAudioHandlerProvider.future).ignore();
+                        ref
+                            .read(ttsPlayerProvider.notifier)
+                            .start(
+                              seriesId: seriesId,
+                              chapterId: chapterId,
+                              readingListId: readingListId,
+                            );
+                      },
                     ),
                   if (format == .epub)
                     ReaderSettingsButton(

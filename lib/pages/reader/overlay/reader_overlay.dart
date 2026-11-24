@@ -280,9 +280,24 @@ class ReaderOverlay extends HookConsumerWidget {
           );
 
           final dock = this.dock;
-          final rail =
-              MediaQuery.sizeOf(context).height <
-              LayoutConstants.dockRailHeight;
+          final mediaQuery = MediaQuery.of(context);
+          final rail = mediaQuery.size.height < LayoutConstants.dockRailHeight;
+          // The dock takes the screen edge it sits on, with its safe area.
+          final docked = MediaQuery(
+            data: dock == null
+                ? mediaQuery
+                : mediaQuery
+                      .removePadding(removeBottom: !rail, removeRight: rail)
+                      .removeViewPadding(removeBottom: !rail, removeRight: rail)
+                      .copyWith(
+                        systemGestureInsets: rail
+                            ? mediaQuery.systemGestureInsets
+                            : mediaQuery.systemGestureInsets.copyWith(
+                                bottom: 0,
+                              ),
+                      ),
+            child: stack,
+          );
 
           return Scaffold(
             endDrawerEnableOpenDragGesture: false,
@@ -290,21 +305,15 @@ class ReaderOverlay extends HookConsumerWidget {
             body: ReaderShortcuts(
               onNextPage: onNextPage,
               onPreviousPage: onPreviousPage,
-              child: switch (dock) {
-                null => stack,
-                _ when rail => Row(
-                  children: [
-                    Expanded(child: stack),
-                    dock,
-                  ],
-                ),
-                _ => Column(
-                  children: [
-                    Expanded(child: stack),
-                    dock,
-                  ],
-                ),
-              },
+              // The same tree with or without the dock, so the reader keeps
+              // its state when the dock comes and goes.
+              child: Flex(
+                direction: rail ? .horizontal : .vertical,
+                children: [
+                  Expanded(child: docked),
+                  ?dock,
+                ],
+              ),
             ),
           );
         },

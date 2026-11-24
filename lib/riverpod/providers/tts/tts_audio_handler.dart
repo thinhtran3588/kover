@@ -79,10 +79,18 @@ Future<TtsAudioHandler> ttsAudioHandler(Ref ref) async {
   );
 
   final session = await AudioSession.instance;
-  await session.configure(const AudioSessionConfiguration.speech());
+  // The TTS engine takes transient focus for every utterance. Ducking events
+  // are kept as such, instead of pauses, so they can be told apart below.
+  await session.configure(
+    const AudioSessionConfiguration.speech().copyWith(
+      androidWillPauseWhenDucked: false,
+    ),
+  );
   var interrupted = false;
   final subscriptions = [
     session.interruptionEventStream.listen((event) {
+      // Includes the TTS engine's own focus requests.
+      if (event.type == AudioInterruptionType.duck) return;
       final status = ref.read(ttsPlayerProvider).status;
       if (event.begin) {
         if (status == .playing) {
