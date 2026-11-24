@@ -5,6 +5,7 @@ import 'package:kover/pages/reader/epub_reader/paginated_epub_page/measure/epub_
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/pagination/epub_paginator.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/epub_page_preprocessor.dart';
 import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/node_indexing_operation.dart';
+import 'package:kover/pages/reader/epub_reader/paginated_epub_page/preprocessing/tts_segment_operation.dart';
 import 'package:kover/utils/constants/html_constants.dart';
 
 void main() {
@@ -211,6 +212,32 @@ void main() {
 
       expect(last, contains('<img'));
       expect(last, isNot(contains('Before')));
+    });
+
+    test('finds the subpage of a read aloud segment', () {
+      final root = EpubPagePreprocessor(
+        html: dom.DocumentFragment.html('<p>One. Two.</p><p>Three.</p>'),
+        operations: [TtsSegmentOperation(), NodeIndexingOperation()],
+      ).process();
+      final paginator = EpubPaginator(root: root);
+      final paragraphs = root.querySelectorAll('p');
+
+      paginator.paginate([
+        _line(nodeIndex: _nodeIndex(paragraphs[0]), top: 0, bottom: 10),
+        _line(
+          nodeIndex: _nodeIndex(paragraphs[1]),
+          top: 20,
+          bottom: 30,
+          childPath: const [0],
+        ),
+      ], 15);
+
+      expect(paginator.subpageCount, 2);
+      expect(paginator.subpageForSegment(0), 0);
+      expect(paginator.subpageForSegment(1), 0);
+      expect(paginator.subpageForSegment(2), 1);
+      expect(paginator.subpageForSegment(2, from: 1), 1);
+      expect(paginator.subpageForSegment(9), isNull);
     });
   });
 }

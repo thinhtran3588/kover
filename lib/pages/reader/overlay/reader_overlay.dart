@@ -13,6 +13,7 @@ import 'package:kover/riverpod/providers/reader.dart';
 import 'package:kover/riverpod/providers/reader/reader_navigation.dart';
 import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/theme.dart';
+import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:kover/widgets/util/async_value.dart';
 import 'package:material_ui/material_ui.dart';
@@ -38,6 +39,9 @@ class ReaderOverlay extends HookConsumerWidget {
   final Widget? endDrawer;
   final Widget? extraControls;
 
+  /// A panel docked below the content, or to its end edge on short screens.
+  final Widget? dock;
+
   const ReaderOverlay({
     super.key,
     this.onNextPage,
@@ -46,6 +50,7 @@ class ReaderOverlay extends HookConsumerWidget {
     this.isLastPage,
     this.endDrawer,
     this.extraControls,
+    this.dock,
     this.readingListId,
     this.disableGestures = false,
     required this.chapterId,
@@ -127,159 +132,198 @@ class ReaderOverlay extends HookConsumerWidget {
             },
           );
 
+          final stack = Stack(
+            children: [
+              Positioned.fill(
+                child: Column(
+                  mainAxisSize: .min,
+                  children: [
+                    Expanded(child: child),
+                    if (data.showProgressBar &&
+                        data.reader.series.format == .epub)
+                      SubpageProgress(
+                            seriesId: seriesId,
+                            chapterId: chapterId,
+                            readingListId: readingListId,
+                          )
+                          .animate(
+                            target: uiVisible.value ? 0.0 : 1.0,
+                          )
+                          .fadeIn(duration: progressFadeDuration)
+                    else if (data.showProgressBar)
+                      ReaderProgress(
+                            seriesId: seriesId,
+                            chapterId: chapterId,
+                            readingListId: readingListId,
+                          )
+                          .animate(
+                            target: uiVisible.value ? 0.0 : 1.0,
+                          )
+                          .fadeIn(duration: progressFadeDuration),
+                  ],
+                ),
+              ),
+              Positioned.fill(
+                child: OverlayGestures(
+                  seriesId: seriesId,
+                  disableGestures: disableGestures,
+                  onCenterTap: () => uiVisible.value = !uiVisible.value,
+                  onLeftTap: onPreviousPage,
+                  onRightTap: onNextPage,
+                ),
+              ),
+              Align(
+                alignment: .topCenter,
+                child:
+                    ReaderHeader(
+                          seriesId: seriesId,
+                          chapterId: chapterId,
+                          readingListId: readingListId,
+                          hasDrawer: endDrawer != null,
+                        )
+                        .animate(target: uiVisible.value ? 1.0 : 0.0)
+                        .show(duration: 10.ms, maintain: false)
+                        .fadeIn(duration: overlayFadeDuration),
+              ),
+              Align(
+                alignment: .bottomCenter,
+                child:
+                    ChapterSnackbar(
+                          title: l.previousChapter(
+                            prevChapter.value?.title ?? '',
+                          ),
+                          onNavigate: () {
+                            log.debug(
+                              'navigating to previous chapter',
+                              attributes: {
+                                'chapter_id': prevChapter.value?.id ?? 'null',
+                              },
+                            );
+                            ReaderRoute(
+                              seriesId: seriesId,
+                              chapterId: prevChapter.value!.id,
+                              readingListId: readingListId,
+                            ).replace(context);
+                          },
+                          onDismiss: snackbarDismissed.value
+                              ? null
+                              : () => snackbarDismissed.value = true,
+                        )
+                        .animate(
+                          target:
+                              shouldShowSnackbar &&
+                                  showSnackbar.value == .previous
+                              ? 1.0
+                              : 0.0,
+                        )
+                        .show(duration: 10.ms, maintain: false)
+                        .fade(duration: 100.ms)
+                        .animate(target: uiVisible.value ? 1.0 : 0.0)
+                        .moveY(
+                          end: -snackbarOffset,
+                          duration: overlayFadeDuration,
+                        ),
+              ),
+              Align(
+                alignment: .bottomCenter,
+                child:
+                    ChapterSnackbar(
+                          title: l.nextChapter(
+                            nextChapter.value?.title ?? '',
+                          ),
+                          onNavigate: () {
+                            log.debug(
+                              'navigating to next chapter',
+                              attributes: {
+                                'chapter_id': nextChapter.value?.id ?? 'null',
+                              },
+                            );
+                            ReaderRoute(
+                              seriesId: seriesId,
+                              chapterId: nextChapter.value!.id,
+                              readingListId: readingListId,
+                            ).replace(context);
+                          },
+                          onDismiss: snackbarDismissed.value
+                              ? null
+                              : () => snackbarDismissed.value = true,
+                        )
+                        .animate(
+                          target:
+                              shouldShowSnackbar && showSnackbar.value == .next
+                              ? 1.0
+                              : 0.0,
+                        )
+                        .show(duration: 10.ms, maintain: false)
+                        .fade(duration: overlayFadeDuration)
+                        .animate(target: uiVisible.value ? 1.0 : 0.0)
+                        .moveY(
+                          end: -snackbarOffset,
+                          duration: overlayFadeDuration,
+                        ),
+              ),
+            ],
+          );
+
+          final controls =
+              ReaderControls(
+                    seriesId: seriesId,
+                    chapterId: chapterId,
+                    readingListId: readingListId,
+                    onJumpToPage: onJumpToPage,
+                    extraControls: extraControls,
+                  )
+                  .animate(target: uiVisible.value ? 1.0 : 0.0)
+                  .show(duration: 10.ms, maintain: false)
+                  .fade(duration: overlayFadeDuration);
+
+          final dock = this.dock;
+          final mediaQuery = MediaQuery.of(context);
+          final rail = mediaQuery.size.height < LayoutConstants.dockRailHeight;
+          // The dock takes the screen edge it sits on, with its safe area.
+          final docked = MediaQuery(
+            data: dock == null
+                ? mediaQuery
+                : mediaQuery
+                      .removePadding(removeBottom: !rail, removeRight: rail)
+                      .removeViewPadding(removeBottom: !rail, removeRight: rail)
+                      .copyWith(
+                        systemGestureInsets: rail
+                            ? mediaQuery.systemGestureInsets
+                            : mediaQuery.systemGestureInsets.copyWith(
+                                bottom: 0,
+                              ),
+                      ),
+            child: stack,
+          );
+
           return Scaffold(
             endDrawerEnableOpenDragGesture: false,
             endDrawer: endDrawer,
             body: ReaderShortcuts(
               onNextPage: onNextPage,
               onPreviousPage: onPreviousPage,
-              child: Stack(
+              // The same tree with or without the dock, so the reader keeps
+              // its state when the dock comes and goes. The controls keep
+              // their place at the bottom and the dock sits above them.
+              child: CustomMultiChildLayout(
+                delegate: _DockLayout(
+                  rail: rail,
+                  bottomInset: mediaQuery.padding.bottom,
+                ),
                 children: [
-                  Positioned.fill(
-                    child: Column(
-                      mainAxisSize: .min,
-                      children: [
-                        Expanded(child: child),
-                        if (data.showProgressBar &&
-                            data.reader.series.format == .epub)
-                          SubpageProgress(
-                                seriesId: seriesId,
-                                chapterId: chapterId,
-                                readingListId: readingListId,
-                              )
-                              .animate(
-                                target: uiVisible.value ? 0.0 : 1.0,
-                              )
-                              .fadeIn(duration: progressFadeDuration)
-                        else if (data.showProgressBar)
-                          ReaderProgress(
-                                seriesId: seriesId,
-                                chapterId: chapterId,
-                                readingListId: readingListId,
-                              )
-                              .animate(
-                                target: uiVisible.value ? 0.0 : 1.0,
-                              )
-                              .fadeIn(duration: progressFadeDuration),
-                      ],
-                    ),
+                  LayoutId(id: _DockSlot.content, child: docked),
+                  LayoutId(
+                    id: _DockSlot.controls,
+                    child: rail && dock != null
+                        ? MediaQuery.removePadding(
+                            context: context,
+                            removeRight: true,
+                            child: controls,
+                          )
+                        : controls,
                   ),
-                  Positioned.fill(
-                    child: OverlayGestures(
-                      seriesId: seriesId,
-                      disableGestures: disableGestures,
-                      onCenterTap: () => uiVisible.value = !uiVisible.value,
-                      onLeftTap: onPreviousPage,
-                      onRightTap: onNextPage,
-                    ),
-                  ),
-                  Align(
-                    alignment: .topCenter,
-                    child:
-                        ReaderHeader(
-                              seriesId: seriesId,
-                              chapterId: chapterId,
-                              readingListId: readingListId,
-                              hasDrawer: endDrawer != null,
-                            )
-                            .animate(target: uiVisible.value ? 1.0 : 0.0)
-                            .show(duration: 10.ms, maintain: false)
-                            .fadeIn(duration: overlayFadeDuration),
-                  ),
-                  Align(
-                    alignment: .bottomCenter,
-                    child:
-                        ChapterSnackbar(
-                              title: l.previousChapter(
-                                prevChapter.value?.title ?? '',
-                              ),
-                              onNavigate: () {
-                                log.debug(
-                                  'navigating to previous chapter',
-                                  attributes: {
-                                    'chapter_id':
-                                        prevChapter.value?.id ?? 'null',
-                                  },
-                                );
-                                ReaderRoute(
-                                  seriesId: seriesId,
-                                  chapterId: prevChapter.value!.id,
-                                  readingListId: readingListId,
-                                ).replace(context);
-                              },
-                              onDismiss: snackbarDismissed.value
-                                  ? null
-                                  : () => snackbarDismissed.value = true,
-                            )
-                            .animate(
-                              target:
-                                  shouldShowSnackbar &&
-                                      showSnackbar.value == .previous
-                                  ? 1.0
-                                  : 0.0,
-                            )
-                            .show(duration: 10.ms, maintain: false)
-                            .fade(duration: 100.ms)
-                            .animate(target: uiVisible.value ? 1.0 : 0.0)
-                            .moveY(
-                              end: -snackbarOffset,
-                              duration: overlayFadeDuration,
-                            ),
-                  ),
-                  Align(
-                    alignment: .bottomCenter,
-                    child:
-                        ChapterSnackbar(
-                              title: l.nextChapter(
-                                nextChapter.value?.title ?? '',
-                              ),
-                              onNavigate: () {
-                                log.debug(
-                                  'navigating to next chapter',
-                                  attributes: {
-                                    'chapter_id':
-                                        nextChapter.value?.id ?? 'null',
-                                  },
-                                );
-                                ReaderRoute(
-                                  seriesId: seriesId,
-                                  chapterId: nextChapter.value!.id,
-                                  readingListId: readingListId,
-                                ).replace(context);
-                              },
-                              onDismiss: snackbarDismissed.value
-                                  ? null
-                                  : () => snackbarDismissed.value = true,
-                            )
-                            .animate(
-                              target:
-                                  shouldShowSnackbar &&
-                                      showSnackbar.value == .next
-                                  ? 1.0
-                                  : 0.0,
-                            )
-                            .show(duration: 10.ms, maintain: false)
-                            .fade(duration: overlayFadeDuration)
-                            .animate(target: uiVisible.value ? 1.0 : 0.0)
-                            .moveY(
-                              end: -snackbarOffset,
-                              duration: overlayFadeDuration,
-                            ),
-                  ),
-                  Align(
-                    alignment: .bottomCenter,
-                    child:
-                        ReaderControls(
-                              seriesId: seriesId,
-                              chapterId: chapterId,
-                              readingListId: readingListId,
-                              onJumpToPage: onJumpToPage,
-                              extraControls: extraControls,
-                            )
-                            .animate(target: uiVisible.value ? 1.0 : 0.0)
-                            .show(duration: 10.ms, maintain: false)
-                            .fade(duration: overlayFadeDuration),
-                  ),
+                  if (dock != null) LayoutId(id: _DockSlot.dock, child: dock),
                 ],
               ),
             ),
@@ -288,4 +332,65 @@ class ReaderOverlay extends HookConsumerWidget {
       ),
     );
   }
+}
+
+enum _DockSlot { content, controls, dock }
+
+/// Lays out the content beside the dock and the controls at the bottom of the
+/// content, or of the screen when the dock is below. A dock below sits above
+/// the controls while they are shown, without moving the content.
+class _DockLayout extends MultiChildLayoutDelegate {
+  final bool rail;
+
+  /// The bottom safe area, which the dock and the controls both pad.
+  final double bottomInset;
+
+  _DockLayout({required this.rail, required this.bottomInset});
+
+  @override
+  void performLayout(Size size) {
+    var dockSize = Size.zero;
+    if (hasChild(_DockSlot.dock)) {
+      dockSize = layoutChild(_DockSlot.dock, BoxConstraints.loose(size));
+    }
+
+    final content = rail
+        ? Size(size.width - dockSize.width, size.height)
+        : Size(size.width, size.height - dockSize.height);
+    layoutChild(_DockSlot.content, BoxConstraints.tight(content));
+    positionChild(_DockSlot.content, Offset.zero);
+
+    final area = rail ? content : size;
+    final controls = layoutChild(
+      _DockSlot.controls,
+      BoxConstraints.loose(area),
+    );
+    positionChild(
+      _DockSlot.controls,
+      Offset(
+        (area.width - controls.width) / 2,
+        area.height - controls.height,
+      ),
+    );
+
+    if (!hasChild(_DockSlot.dock)) return;
+    positionChild(
+      _DockSlot.dock,
+      rail
+          ? Offset(
+              size.width - dockSize.width,
+              (size.height - dockSize.height) / 2,
+            )
+          : Offset(
+              (size.width - dockSize.width) / 2,
+              size.height -
+                  dockSize.height -
+                  (controls.height > 0 ? controls.height - bottomInset : 0),
+            ),
+    );
+  }
+
+  @override
+  bool shouldRelayout(_DockLayout oldDelegate) =>
+      oldDelegate.rail != rail || oldDelegate.bottomInset != bottomInset;
 }

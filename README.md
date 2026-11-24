@@ -23,6 +23,23 @@ An unofficial cross-platform [Kavita](https://www.kavitareader.com/) client.
 - Library browsing with support for filtering, sorting and searching.
 - Built with Flutter with the goal of keeping all platforms supported, i.e. mobile, desktop and (because why not) web.
 
+## Fork Additions
+
+This fork adds the features below on top of [upstream Kover](https://github.com/rodonisi/kover).
+
+### Read Aloud (ePub)
+
+Listen to ePub books with text-to-speech, starting from the first sentence on screen.
+
+- **Open it** from the read aloud button in the reader controls. The player opens paused, so the voice and speed can be set before reading starts.
+- **Follow along**: the sentence being read is highlighted, and pages, subpages and chapters turn automatically. Reading progress is saved and synced the same way as manual reading.
+- **Player bar**: play/pause, previous/next sentence, speed and stop. It docks at the bottom in portrait and as a side rail on short landscape screens (e.g. car head units).
+- **Engines**:
+  - **Device**: the platform's built-in text-to-speech voices. Works offline on all platforms.
+  - **Edge (online)**: natural Microsoft Edge voices on Android, iOS and macOS. Needs an internet connection, and the text being read is sent to Microsoft. Upcoming sentences are prefetched to keep gaps short.
+- **Settings**: engine, voice (defaults to one matching the series language), speed and pitch (0.5x–2x), and whether to continue into the next chapter. Changing voice, speed or pitch replays the current sentence.
+- **Background playback**: keeps reading with the screen locked or the app in the background, with controls on the lock screen, notification, iOS Now Playing and car media buttons.
+
 ## Getting Started
 
 ### Installation

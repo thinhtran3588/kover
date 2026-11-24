@@ -43,6 +43,10 @@ class PaginatedEpubPage extends HookWidget {
             .toCssRgba(),
         'color': theme.colorScheme.onTertiaryContainer.toCssRgba(),
       },
+      '.${HtmlConstants.ttsActiveClass}': {
+        'background-color': theme.colorScheme.primaryContainer.toCssRgba(),
+        'color': theme.colorScheme.onPrimaryContainer.toCssRgba(),
+      },
     };
   }
 

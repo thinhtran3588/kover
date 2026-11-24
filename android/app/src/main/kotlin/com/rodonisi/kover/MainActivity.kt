@@ -1,12 +1,12 @@
 package com.rodonisi.kover
 
 import android.view.KeyEvent
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+class MainActivity : AudioServiceActivity() {
     private var volumeKeySink: EventChannel.EventSink? = null
     private val capturedKeyCodes = mutableSetOf<Int>()
 

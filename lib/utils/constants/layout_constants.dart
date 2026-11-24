@@ -45,6 +45,9 @@ sealed class LayoutConstants {
   static const double largeBorderRadius = 32.0;
   static const double largerBorderRadius = 64.0;
 
+  static const double minTapTarget = 56.0;
+  static const double dockRailHeight = 480.0;
+
   static final Duration pageSlideDuration = 200.ms;
 }
 

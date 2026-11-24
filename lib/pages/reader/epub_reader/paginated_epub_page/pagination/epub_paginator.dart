@@ -13,6 +13,7 @@ class EpubPaginator({required final dom.DocumentFragment root}) {
   final Map<int, String> _subpageHtml = {};
   final Map<int, String?> _subpageScrollId = {};
   final Map<int, int> _nodeIndexSubpage = {};
+  final Map<int, (int, int)?> _subpageSegments = {};
 
   int get subpageCount => _subpages.length;
 
@@ -25,6 +26,7 @@ class EpubPaginator({required final dom.DocumentFragment root}) {
     _subpageHtml.clear();
     _subpageScrollId.clear();
     _nodeIndexSubpage.clear();
+    _subpageSegments.clear();
 
     if (units.isEmpty || pageHeight <= 0) {
       log.debug(
@@ -115,6 +117,45 @@ class EpubPaginator({required final dom.DocumentFragment root}) {
 
     _subpageScrollId[index] = scrollId;
     return scrollId;
+  }
+
+  /// Returns the first subpage, from [from] on, that contains the text of the
+  /// read aloud [segment], or null if no subpage does.
+  int? subpageForSegment(int segment, {int from = 0}) {
+    for (final start in [from.clamp(0, subpageCount), 0]) {
+      for (var i = start; i < subpageCount; i++) {
+        final range = _segmentRange(i);
+        if (range != null && segment >= range.$1 && segment <= range.$2) {
+          return i;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// The first read aloud segment shown on [index].
+  int? firstSegment(int index) => _segmentRange(index)?.$1;
+
+  /// The lowest and highest read aloud segment on [index], computed lazily.
+  (int, int)? _segmentRange(int index) {
+    if (_subpageSegments.containsKey(index)) return _subpageSegments[index];
+
+    final fragment = dom.DocumentFragment.html(getSubpage(index));
+    int? low;
+    int? high;
+    for (final element in fragment.querySelectorAll(
+      '[${HtmlConstants.ttsSegmentAttribute}]',
+    )) {
+      final segment = int.tryParse(
+        element.attributes[HtmlConstants.ttsSegmentAttribute] ?? '',
+      );
+      if (segment == null) continue;
+      low = low == null || segment < low ? segment : low;
+      high = high == null || segment > high ? segment : high;
+    }
+
+    return _subpageSegments[index] = low == null ? null : (low, high!);
   }
 
   /// Clears serialized subpage HTML while keeping the pagination geometry.

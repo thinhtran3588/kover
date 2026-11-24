@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kover's logo as a single-color notification icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M8,2.9 h8 a2,2 0 0 1 2,2 v14.2 a2,2 0 0 1 -2,2 h-8 a2,2 0 0 1 -2,-2 v-14.2 a2,2 0 0 1 2,-2 z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.6,5.2 h2.6 v3.4 h-2.6 z" />
+    <path
+        android:pathData="M12.6,5.8 h2.8 M12.6,8 h2.8 M8.6,10.8 h6.8 M8.6,13.4 h6.8 M8.6,16 h6.8 M8.6,18.6 h4.2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.2" />
+</vector>
