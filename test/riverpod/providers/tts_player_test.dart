@@ -502,6 +502,7 @@ class _FakeEngine implements TtsEngine {
 }
 
 class _FakeSync extends SyncManager {
+  // ignore: avoid_public_notifier_properties
   var progressSyncs = 0;
 
   @override
@@ -515,6 +516,7 @@ class _FakeReader extends Reader {
   final ReaderState _state;
   final saved = <int>[];
   final savedScrollIds = <String?>[];
+  // ignore: avoid_public_notifier_properties
   var completed = 0;
 
   _FakeReader(this._state);
