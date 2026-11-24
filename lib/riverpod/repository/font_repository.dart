@@ -5,9 +5,12 @@ import 'package:kover/riverpod/providers/client.dart';
 import 'package:kover/riverpod/providers/settings/credentials.dart';
 import 'package:kover/riverpod/repository/database.dart';
 import 'package:kover/sync/book_sync_operations.dart';
+import 'package:pool/pool.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'font_repository.g.dart';
+
+const _maxConcurrentFontFetches = 4;
 
 @Riverpod(keepAlive: true)
 FontRepository fontRepository(Ref ref) {
@@ -38,21 +41,32 @@ class const FontRepository({
 
   /// Fetches any missing font in [fonts] and persists them into the db.
   Future<void> saveFonts(List<FontFace> fonts) async {
-    for (final font in fonts) {
-      if (await _db.fontDao.getByUrl(url: font.url) != null) continue;
-
-      final fetched = await _client.getFontBytes(font.url);
-      if (fetched == null || fetched.bytes.isEmpty) continue;
-
-      await _db.fontDao.upsertFont(
-        FontsCompanion.insert(
-          family: font.family,
-          weight: Value(font.weight),
-          url: font.url,
-          data: fetched.bytes,
-          mimeType: Value(fetched.mimeType),
+    final pool = Pool(_maxConcurrentFontFetches);
+    try {
+      await Future.wait(
+        {for (final font in fonts) font.url: font}.values.map(
+          (font) => pool.withResource(() => _saveFont(font)),
         ),
       );
+    } finally {
+      await pool.close();
     }
+  }
+
+  Future<void> _saveFont(FontFace font) async {
+    if (await _db.fontDao.getByUrl(url: font.url) != null) return;
+
+    final fetched = await _client.getFontBytes(font.url);
+    if (fetched == null || fetched.bytes.isEmpty) return;
+
+    await _db.fontDao.upsertFont(
+      FontsCompanion.insert(
+        family: font.family,
+        weight: Value(font.weight),
+        url: font.url,
+        data: fetched.bytes,
+        mimeType: Value(fetched.mimeType),
+      ),
+    );
   }
 }

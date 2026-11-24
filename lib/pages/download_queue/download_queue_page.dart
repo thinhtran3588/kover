@@ -21,7 +21,16 @@ class DownloadQueuePage extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final hasDls = ref.watch(
       downloadManagerProvider.select(
-        (state) => state.value?.downloadQueue.isNotEmpty ?? false,
+        (state) =>
+            state.value != null &&
+            (state.value!.downloadQueue.isNotEmpty ||
+                state.value!.failed.isNotEmpty ||
+                state.value!.paused.isNotEmpty),
+      ),
+    );
+    final hasFailed = ref.watch(
+      downloadManagerProvider.select(
+        (state) => state.value?.failed.isNotEmpty ?? false,
       ),
     );
 
@@ -32,6 +41,13 @@ class DownloadQueuePage extends ConsumerWidget {
           SliverAppBar.large(
             title: Text(l.downloadQueue),
             actions: [
+              if (hasFailed)
+                TextButton(
+                  onPressed: () async {
+                    await ref.read(downloadManagerProvider.notifier).retryAll();
+                  },
+                  child: Text(l.retryAll),
+                ),
               if (hasDls) const CancellAllAction(),
             ],
           ),
@@ -76,16 +92,20 @@ class DownloadQueueList extends ConsumerWidget {
       asyncValue: queued,
       data: (data) {
         final l = AppLocalizations.of(context);
-        if (data.downloadQueue.isEmpty) {
+        final ids = {
+          ...data.downloadQueue,
+          ...data.failed.keys,
+          ...data.paused,
+        }.toList();
+        if (ids.isEmpty) {
           return SliverFillRemaining(
             child: Center(child: Text(l.noDownloadsInQueue)),
           );
         }
-        final queued = data.downloadQueue.toList();
         return SliverList.separated(
-          itemCount: queued.length,
+          itemCount: ids.length,
           itemBuilder: (context, index) {
-            return DownloadQueueItem(chapterId: queued[index]);
+            return DownloadQueueItem(chapterId: ids[index]);
           },
           separatorBuilder: (context, index) {
             return const SizedBox(height: LayoutConstants.listSpacing);
@@ -112,6 +132,18 @@ class DownloadQueueItem extends ConsumerWidget {
     final progress = ref.watch(
       chapterDownloadProgressProvider(chapterId: chapterId),
     );
+    final l = AppLocalizations.of(context);
+    final manager = ref.read(downloadManagerProvider.notifier);
+    final isFailed = ref.watch(
+      downloadManagerProvider.select(
+        (state) => state.value?.failed.containsKey(chapterId) ?? false,
+      ),
+    );
+    final isPaused = ref.watch(
+      downloadManagerProvider.select(
+        (state) => state.value?.paused.contains(chapterId) ?? false,
+      ),
+    );
 
     return Async(
       asyncValue: chapter,
@@ -119,15 +151,35 @@ class DownloadQueueItem extends ConsumerWidget {
         return CoverListEntry(
           cover: ChapterCoverImage(chapterId: chapterId),
           title: data.title,
-          subtitle: series.value?.name,
+          subtitle: isFailed ? l.downloadFailed : series.value?.name,
           progress: progress.value,
-          trailing: IconButton(
-            onPressed: () async {
-              await ref
-                  .read(downloadManagerProvider.notifier)
-                  .cancel(chapterId);
-            },
-            icon: const Icon(KoverIcons.cancel),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isFailed)
+                IconButton(
+                  tooltip: l.retry,
+                  onPressed: () => manager.retry(chapterId),
+                  icon: const Icon(KoverIcons.retry),
+                )
+              else if (isPaused)
+                IconButton(
+                  tooltip: l.resume,
+                  onPressed: () => manager.resume(chapterId),
+                  icon: const Icon(KoverIcons.resume),
+                )
+              else
+                IconButton(
+                  tooltip: l.pause,
+                  onPressed: () => manager.pause(chapterId),
+                  icon: const Icon(KoverIcons.downloadPaused),
+                ),
+              IconButton(
+                tooltip: l.cancel,
+                onPressed: () => manager.cancel(chapterId),
+                icon: const Icon(KoverIcons.cancel),
+              ),
+            ],
           ),
         );
       },

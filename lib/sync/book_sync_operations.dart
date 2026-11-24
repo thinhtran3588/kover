@@ -8,6 +8,9 @@ import 'package:kover/database/app_database.dart';
 import 'package:kover/models/page_content.dart';
 import 'package:kover/utils/epub_font_parser.dart';
 import 'package:kover/utils/logging.dart';
+import 'package:pool/pool.dart';
+
+const _maxConcurrentImageFetches = 4;
 
 class BookSyncOperations {
   final Openapi _client;
@@ -120,18 +123,16 @@ class BookSyncOperations {
     required int chapterId,
     required int page,
   }) async {
-    Future<void> walk(Node node) async {
-      for (var n in node.children) {
+    // Collect the image nodes first so their data can be fetched
+    // concurrently, then mutate the DOM in document order.
+    final imgNodes = <Element>[];
+    final svgImageNodes = <(Element, String)>[];
+
+    void collect(Node node) {
+      for (final n in node.children) {
         if (n.localName == 'img') {
           final src = '${n.attributes['src']}';
-          if (src.isNotEmpty) {
-            final imageData = await _fetchData(src);
-            if (imageData != null) {
-              final base64img = base64Encode(imageData.bytes);
-              n.attributes['src'] =
-                  'data:${imageData.mimeType};base64,$base64img';
-            }
-          }
+          if (src.isNotEmpty) imgNodes.add(n);
         }
 
         if (n.localName == 'image') {
@@ -139,59 +140,87 @@ class BookSyncOperations {
             final key = entry.key;
             return key is AttributeName && key.name == 'href';
           }).first;
-
-          final src = attr.value;
-          final imageData = await _fetchData(src);
-          if (imageData != null) {
-            final base64img = base64Encode(
-              imageData.bytes,
-            ).replaceAll(RegExp(r'\s+'), '');
-
-            // Replace <svg><image></image></svg> with <img> with embedded base64
-            final imgTag = Element.tag('img');
-            imgTag.attributes['src'] =
-                'data:${imageData.mimeType};base64,$base64img';
-
-            // Copy over width/height if present
-            if (n.attributes['width'] != null) {
-              imgTag.attributes['width'] = n.attributes['width']!;
-            }
-            if (n.attributes['height'] != null) {
-              imgTag.attributes['height'] = n.attributes['height']!;
-            }
-            if (n.attributes.containsKey('style')) {
-              imgTag.attributes['style'] = n.attributes['style']!;
-            }
-            if (n.attributes.containsKey('class')) {
-              imgTag.attributes['class'] = n.attributes['class']!;
-            }
-
-            final svgParent = n.parent;
-            if (svgParent != null && svgParent.localName == 'svg') {
-              final newParent = Element.tag('div');
-
-              if (svgParent.attributes.containsKey('class')) {
-                newParent.attributes['class'] = svgParent.attributes['class']!;
-              }
-              if (svgParent.attributes.containsKey('style')) {
-                newParent.attributes['style'] = svgParent.attributes['style']!;
-              }
-              newParent.append(imgTag);
-              svgParent.replaceWith(newParent);
-            } else {
-              n.replaceWith(imgTag);
-            }
-          }
+          svgImageNodes.add((n, attr.value));
         }
 
-        await walk(n);
+        collect(n);
       }
     }
 
     final html = await _getRawBookPage(chapterId: chapterId, page: page);
     final doc = parseFragment(html);
-    for (var node in doc.nodes) {
-      await walk(node);
+    for (final node in doc.nodes) {
+      collect(node);
+    }
+
+    final pool = Pool(_maxConcurrentImageFetches);
+    try {
+      final imgData = await Future.wait(
+        imgNodes.map(
+          (n) => pool.withResource(() => _fetchData('${n.attributes['src']}')),
+        ),
+      );
+      final svgImageData = await Future.wait(
+        svgImageNodes.map(
+          (e) => pool.withResource(() => _fetchData(e.$2)),
+        ),
+      );
+
+      for (var i = 0; i < imgNodes.length; i++) {
+        final imageData = imgData[i];
+        if (imageData != null) {
+          final base64img = base64Encode(imageData.bytes);
+          imgNodes[i].attributes['src'] =
+              'data:${imageData.mimeType};base64,$base64img';
+        }
+      }
+
+      for (var i = 0; i < svgImageNodes.length; i++) {
+        final n = svgImageNodes[i].$1;
+        final imageData = svgImageData[i];
+        if (imageData != null) {
+          final base64img = base64Encode(
+            imageData.bytes,
+          ).replaceAll(RegExp(r'\s+'), '');
+
+          // Replace <svg><image></image></svg> with <img> with embedded base64
+          final imgTag = Element.tag('img');
+          imgTag.attributes['src'] =
+              'data:${imageData.mimeType};base64,$base64img';
+
+          // Copy over width/height if present
+          if (n.attributes['width'] != null) {
+            imgTag.attributes['width'] = n.attributes['width']!;
+          }
+          if (n.attributes['height'] != null) {
+            imgTag.attributes['height'] = n.attributes['height']!;
+          }
+          if (n.attributes.containsKey('style')) {
+            imgTag.attributes['style'] = n.attributes['style']!;
+          }
+          if (n.attributes.containsKey('class')) {
+            imgTag.attributes['class'] = n.attributes['class']!;
+          }
+
+          final svgParent = n.parent;
+          if (svgParent != null && svgParent.localName == 'svg') {
+            final newParent = Element.tag('div');
+
+            if (svgParent.attributes.containsKey('class')) {
+              newParent.attributes['class'] = svgParent.attributes['class']!;
+            }
+            if (svgParent.attributes.containsKey('style')) {
+              newParent.attributes['style'] = svgParent.attributes['style']!;
+            }
+            newParent.append(imgTag);
+            svgParent.replaceWith(newParent);
+          } else {
+            n.replaceWith(imgTag);
+          }
+        }
+      }
+    } finally {
+      await pool.close();
     }
 
     return doc;

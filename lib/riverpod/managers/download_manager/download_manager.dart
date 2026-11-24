@@ -5,6 +5,7 @@ import 'package:async/async.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/experimental/persist.dart';
+import 'package:kover/riverpod/managers/download_manager/download_foreground.dart';
 import 'package:kover/riverpod/managers/download_manager/download_worker.dart';
 import 'package:kover/riverpod/providers/connectivity.dart';
 import 'package:kover/riverpod/providers/settings/credentials.dart';
@@ -25,8 +26,13 @@ part 'download_manager.g.dart';
 sealed class DownloadManagerState with _$DownloadManagerState {
   const DownloadManagerState._();
 
-  const factory DownloadManagerState({@Default({}) Set<int> downloadQueue}) =
-      _DownloadManagerState;
+  const factory DownloadManagerState({
+    @Default({}) Set<int> downloadQueue,
+
+    /// Chapter id to the last error message of chapters that gave up.
+    @Default({}) Map<int, String> failed,
+    @Default({}) Set<int> paused,
+  }) = _DownloadManagerState;
 
   factory DownloadManagerState.fromJson(Map<String, Object?> json) =>
       _$DownloadManagerStateFromJson(json);
@@ -51,19 +57,37 @@ Future<DownloadWorker> downloadWorker(Ref ref) async {
 @Riverpod(keepAlive: true)
 @JsonPersist()
 class DownloadManager extends _$DownloadManager {
+  static const _maxAttempts = 3;
+
+  /// Waits before the second and third attempt of a chapter.
+  @visibleForTesting
+  static List<Duration> retryDelays = const [
+    Duration(seconds: 2),
+    Duration(seconds: 5),
+  ];
+
   final Map<int, CancelableOperation<void>> _activeTasks = {};
   int _nextRequestId = 0;
 
   @override
   Future<DownloadManagerState> build() async {
     listenSelf((previous, next) {
+      final queue = next.value;
+      if (queue != null) {
+        DownloadForeground.sync(
+          queue.downloadQueue.difference(queue.paused).length,
+        );
+      }
       unawaited(_processQueue());
     });
     _listenConnectivity();
     _listenAppLifecycle();
     _listenDownloadSettings();
 
-    await persist(ref.watch(storageProvider.future)).future;
+    await persist(
+      ref.watch(storageProvider.future),
+      options: const StorageOptions(cacheTime: StorageCacheTime.unsafe_forever),
+    ).future;
 
     return state.value ?? const DownloadManagerState();
   }
@@ -71,11 +95,7 @@ class DownloadManager extends _$DownloadManager {
   Future<void> enqueue(int chapterId) async {
     final current = await future;
 
-    state = AsyncData(
-      current.copyWith(
-        downloadQueue: {...current.downloadQueue, chapterId},
-      ),
-    );
+    state = AsyncData(_enqueued(current, [chapterId]));
     log.info(
       'enqueued chapter for download',
       attributes: {
@@ -85,15 +105,11 @@ class DownloadManager extends _$DownloadManager {
   }
 
   Future<void> enqueueVolume(int volumeId) async {
-    final current = await future;
     final repository = ref.read(volumesRepositoryProvider);
     final ids = await repository.fetchChapterIds(volumeId: volumeId);
+    final current = await future;
 
-    state = AsyncData(
-      current.copyWith(
-        downloadQueue: {...current.downloadQueue, ...ids},
-      ),
-    );
+    state = AsyncData(_enqueued(current, ids));
     log.info(
       'enqueued volume for download',
       attributes: {
@@ -104,15 +120,11 @@ class DownloadManager extends _$DownloadManager {
   }
 
   Future<void> enqueueSeries(int seriesId) async {
-    final current = await future;
     final repository = ref.read(seriesRepositoryProvider);
     final ids = await repository.fetchChapterIds(seriesId: seriesId);
+    final current = await future;
 
-    state = AsyncData(
-      current.copyWith(
-        downloadQueue: {...current.downloadQueue, ...ids},
-      ),
-    );
+    state = AsyncData(_enqueued(current, ids));
     log.info(
       'enqueued series for download',
       attributes: {
@@ -122,14 +134,45 @@ class DownloadManager extends _$DownloadManager {
     );
   }
 
-  Future<void> cancel(int chapterId) async {
+  /// Re-queues the failed chapter [chapterId].
+  Future<void> retry(int chapterId) => enqueue(chapterId);
+
+  /// Re-queues every failed chapter.
+  Future<void> retryAll() async {
     final current = await future;
 
-    await _activeTasks[chapterId]?.cancel();
-    _activeTasks.remove(chapterId);
+    state = AsyncData(_enqueued(current, current.failed.keys));
+    log.info(
+      'retrying all failed downloads',
+      attributes: {'count': current.failed.length},
+    );
+  }
 
-    final newQueue = Set<int>.from(current.downloadQueue)..remove(chapterId);
-    state = AsyncData(current.copyWith(downloadQueue: newQueue));
+  /// Stops the download of [chapterId] but keeps the pages fetched so far.
+  Future<void> pause(int chapterId) async {
+    await _activeTasks.remove(chapterId)?.cancel();
+    final current = await future;
+
+    state = AsyncData(
+      current.copyWith(
+        downloadQueue: Set<int>.from(current.downloadQueue)..remove(chapterId),
+        paused: {...current.paused, chapterId},
+      ),
+    );
+    log.info(
+      'paused download for chapter',
+      attributes: {'chapter_id': chapterId},
+    );
+  }
+
+  /// Puts the paused chapter [chapterId] back in the queue.
+  Future<void> resume(int chapterId) => enqueue(chapterId);
+
+  Future<void> cancel(int chapterId) async {
+    await _activeTasks.remove(chapterId)?.cancel();
+    final current = await future;
+
+    state = AsyncData(_cleared(current, [chapterId]));
     log.info(
       'canceled download for chapter',
       attributes: {'chapter_id': chapterId},
@@ -141,7 +184,9 @@ class DownloadManager extends _$DownloadManager {
 
     await _clearActiveTasks();
 
-    state = AsyncData(current.copyWith(downloadQueue: {}));
+    state = AsyncData(
+      current.copyWith(downloadQueue: {}, failed: {}, paused: {}),
+    );
     log.info(
       'canceled all downloads',
       attributes: {'count': current.downloadQueue.length},
@@ -149,6 +194,7 @@ class DownloadManager extends _$DownloadManager {
   }
 
   Future<void> deleteChapter(int chapterId) async {
+    await _clearIds([chapterId]);
     await ref
         .read(downloadRepositoryProvider)
         .deleteChapter(chapterId: chapterId);
@@ -183,21 +229,19 @@ class DownloadManager extends _$DownloadManager {
       ),
     );
 
-    final activeCount = _activeTasks.length;
-
     final current = await future;
-
-    final toStart = current.downloadQueue
-        .where((i) => !_activeTasks.containsKey(i))
-        .take(max(0, concurrentDownloads - activeCount));
-
-    if (toStart.isEmpty) return;
-
+    if (current.downloadQueue.isEmpty) return;
     final worker = await ref.read(downloadWorkerProvider.future);
 
-    for (final chapterId in toStart) {
-      if (_activeTasks.containsKey(chapterId)) continue;
+    // Evaluate the active set only after the last await so concurrent calls
+    // cannot exceed the cap or start a chapter twice.
+    final toStart = current.downloadQueue
+        .where((i) => !_activeTasks.containsKey(i))
+        .where((i) => !current.paused.contains(i))
+        .take(max(0, concurrentDownloads - _activeTasks.length))
+        .toList();
 
+    for (final chapterId in toStart) {
       log.info(
         'starting download for chapter',
         attributes: {
@@ -222,68 +266,150 @@ class DownloadManager extends _$DownloadManager {
   }
 
   Future<void> _startDownload(int chapterId, DownloadWorker worker) async {
-    final requestId = _nextRequestId++;
-
-    final task = CancelableOperation.fromFuture(
-      worker.downloadChapter(requestId: requestId, chapterId: chapterId),
-      onCancel: () {
-        worker.cancel(requestId);
-      },
-    );
-
-    _activeTasks[chapterId] = task;
+    final repository = ref.read(downloadRepositoryProvider);
+    CancelableOperation<void>? active;
+    var error = '';
 
     try {
-      await task.valueOrCancellation();
-    } catch (e, stacktrace) {
-      log.error(
-        'download failed for chapter',
-        error: e,
-        stacktrace: stacktrace,
-        attributes: {
-          'chapter_id': chapterId,
-        },
-      );
-    } finally {
-      if (identical(_activeTasks[chapterId], task)) {
-        _activeTasks.remove(chapterId);
-      }
+      for (var attempt = 0; attempt < _maxAttempts; attempt++) {
+        if (attempt > 0) {
+          // Held in the active tasks so cancelling also cuts the wait short.
+          final wait = CancelableOperation.fromFuture(
+            Future<void>.delayed(
+              retryDelays[min(attempt - 1, retryDelays.length - 1)],
+            ),
+          );
+          active = wait;
+          _activeTasks[chapterId] = wait;
+          await wait.valueOrCancellation();
+          if (wait.isCanceled) return;
+        }
 
-      if (!task.isCanceled) {
-        log.info(
-          'download completed for chapter',
-          attributes: {
-            'chapterId': chapterId,
+        final requestId = _nextRequestId++;
+        final task = CancelableOperation.fromFuture(
+          worker.downloadChapter(requestId: requestId, chapterId: chapterId),
+          onCancel: () {
+            worker.cancel(requestId);
           },
         );
-        final current = await future;
-        final newQueue = Set<int>.from(current.downloadQueue)
-          ..remove(chapterId);
-        state = AsyncData(current.copyWith(downloadQueue: newQueue));
+        active = task;
+        _activeTasks[chapterId] = task;
+
+        try {
+          await task.valueOrCancellation();
+          if (task.isCanceled) return;
+
+          if (await repository.isChapterDownloaded(chapterId: chapterId)) {
+            log.info(
+              'download completed for chapter',
+              attributes: {'chapter_id': chapterId},
+            );
+            await _settle(chapterId, task);
+            return;
+          }
+          error = 'Download incomplete';
+        } catch (e, stacktrace) {
+          if (task.isCanceled) return;
+          error = e.toString();
+          log.error(
+            'download failed for chapter',
+            error: e,
+            stacktrace: stacktrace,
+            attributes: {
+              'chapter_id': chapterId,
+              'attempt': attempt + 1,
+            },
+          );
+        }
+      }
+
+      // Offline: keep the chapter queued so it resumes on reconnect instead of
+      // being marked failed.
+      if (ref.read(hasConnectionProvider).value != true) {
+        log.info(
+          'offline, keeping chapter queued',
+          attributes: {'chapter_id': chapterId},
+        );
+        return;
+      }
+
+      log.warning(
+        'giving up on chapter download',
+        attributes: {'chapter_id': chapterId, 'error': error},
+      );
+      await _settle(chapterId, active, error: error);
+    } finally {
+      if (active != null && identical(_activeTasks[chapterId], active)) {
+        _activeTasks.remove(chapterId);
       }
     }
   }
 
-  Future<void> _clearIds(List<int> chapterIds) async {
+  /// Takes [chapterId] out of the queue once its download ended, as completed
+  /// or, with an [error], as failed. Does nothing if [task] no longer owns the
+  /// chapter because it was cancelled meanwhile.
+  Future<void> _settle(
+    int chapterId,
+    CancelableOperation<void>? task, {
+    String? error,
+  }) async {
     final current = await future;
+    if (!identical(_activeTasks[chapterId], task)) return;
+
+    // Free the slot in the same step as the state change so the queue never
+    // sees the chapter as both done and idle.
+    _activeTasks.remove(chapterId);
+    final failed = Map<int, String>.from(current.failed)..remove(chapterId);
+    state = AsyncData(
+      current.copyWith(
+        downloadQueue: Set<int>.from(current.downloadQueue)..remove(chapterId),
+        failed: error == null ? failed : {...failed, chapterId: error},
+      ),
+    );
+  }
+
+  DownloadManagerState _enqueued(
+    DownloadManagerState current,
+    Iterable<int> ids,
+  ) {
+    final idSet = ids.toSet();
+    return current.copyWith(
+      downloadQueue: {...current.downloadQueue, ...idSet},
+      failed: Map<int, String>.from(current.failed)
+        ..removeWhere((id, _) => idSet.contains(id)),
+      paused: current.paused.difference(idSet),
+    );
+  }
+
+  DownloadManagerState _cleared(
+    DownloadManagerState current,
+    Iterable<int> ids,
+  ) {
+    final idSet = ids.toSet();
+    return current.copyWith(
+      downloadQueue: current.downloadQueue.difference(idSet),
+      failed: Map<int, String>.from(current.failed)
+        ..removeWhere((id, _) => idSet.contains(id)),
+      paused: current.paused.difference(idSet),
+    );
+  }
+
+  Future<void> _clearIds(List<int> chapterIds) async {
     final active = _activeTasks.keys
         .where((k) => chapterIds.contains(k))
         .toList();
     for (final k in active) {
-      await _activeTasks[k]!.cancel();
-      _activeTasks.remove(k);
+      await _activeTasks.remove(k)?.cancel();
     }
-    final newQueue = Set<int>.from(current.downloadQueue)
-      ..removeAll(chapterIds);
-    state = AsyncData(current.copyWith(downloadQueue: newQueue));
+    final current = await future;
+    state = AsyncData(_cleared(current, chapterIds));
   }
 
   void _listenConnectivity() {
     ref.listen(hasConnectionProvider, (prev, next) {
       next.whenData((good) async {
-        if (prev != null && good != prev.value) {
-          await _clearActiveTasks();
-          if (good) await _processQueue();
+        if (prev != null && good != prev.value && good) {
+          await _processQueue();
         }
       });
     });
@@ -291,10 +417,7 @@ class DownloadManager extends _$DownloadManager {
 
   void _listenAppLifecycle() async {
     final observer = LifecycleOnResumeObserver(
-      onResume: () async {
-        await _clearActiveTasks();
-        await _processQueue();
-      },
+      onResume: _processQueue,
     );
     WidgetsBinding.instance.addObserver(observer);
     ref.onDispose(() => WidgetsBinding.instance.removeObserver(observer));

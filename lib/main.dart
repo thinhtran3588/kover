@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
+import 'package:kover/riverpod/managers/download_manager/download_manager.dart';
 import 'package:kover/riverpod/providers/local_log.dart';
 import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/general_settings.dart';
@@ -135,6 +136,7 @@ class EagerProviders extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(sentryRepositoryProvider);
     ref.watch(localLogProvider);
+    ref.watch(downloadManagerProvider);
 
     return child;
   }

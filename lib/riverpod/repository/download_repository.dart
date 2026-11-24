@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide CancellationException;
 import 'package:kover/database/app_database.dart';
 import 'package:kover/database/converters/page_content_converter.dart';
 import 'package:kover/models/enums/format.dart';
@@ -13,11 +13,16 @@ import 'package:kover/sync/chapter_sync_operations.dart';
 import 'package:kover/sync/series_sync_operations.dart';
 import 'package:kover/sync/volume_sync_operations.dart';
 import 'package:kover/utils/cancellation_token.dart';
-import 'package:kover/utils/chunked_fetch.dart';
 import 'package:kover/utils/logging.dart';
+import 'package:pool/pool.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'download_repository.g.dart';
+
+const _maxConcurrentPageFetches = 6;
+const _insertBatchSize = 8;
+const _pageFetchTimeout = Duration(minutes: 1);
+const _pdfFetchTimeout = Duration(minutes: 10);
 
 @Riverpod(keepAlive: true)
 DownloadRepository downloadRepository(Ref ref) {
@@ -105,30 +110,70 @@ class const DownloadRepository({
         if (!existing.contains(page)) page,
     ];
 
-    await chunkedFetch<int, DownloadedPagesCompanion>(
-      items: missing,
-      chunkSize: 2,
-      fetchCallback: (page) async {
-        cancellationToken?.throwIfCancelled();
-        final blob = switch (format) {
-          .epub => await _downloadEpubPage(chapterId: chapterId, page: page),
-          .archive || .image => await _bookClient.getImagePage(
-            chapterId: chapterId,
-            page: page,
-          ),
-          .pdf => await _bookClient.getPdf(chapterId: chapterId),
-          _ => throw Exception('unsupported format'),
-        };
-
-        return DownloadedPagesCompanion.insert(
+    Future<DownloadedPagesCompanion> fetchPage(int page) async {
+      cancellationToken?.throwIfCancelled();
+      final blob = await switch (format) {
+        .epub => _downloadEpubPage(
           chapterId: chapterId,
           page: page,
-          data: blob,
-          lastSync: Value(DateTime.timestamp()),
-        );
-      },
-      upsertCallback: (batch) => _db.downloadDao.insertPagesBatch(batch),
-    );
+        ).timeout(_pageFetchTimeout),
+        .archive || .image =>
+          _bookClient
+              .getImagePage(chapterId: chapterId, page: page)
+              .timeout(_pageFetchTimeout),
+        // A PDF is one whole-file request, so it gets a longer timeout than a
+        // single page.
+        .pdf =>
+          _bookClient.getPdf(chapterId: chapterId).timeout(_pdfFetchTimeout),
+        _ => throw Exception('unsupported format'),
+      };
+
+      return DownloadedPagesCompanion.insert(
+        chapterId: chapterId,
+        page: page,
+        data: blob,
+        lastSync: Value(DateTime.timestamp()),
+      );
+    }
+
+    // A page the server can't serve must not block the rest of the chapter:
+    // keep fetching, then fail with the first error so the chapter is
+    // retried or marked failed. Cancellation still stops everything.
+    Object? pageError;
+    StackTrace? pageStack;
+    final pool = Pool(_maxConcurrentPageFetches);
+    final buffer = <DownloadedPagesCompanion>[];
+    try {
+      final rows = pool.forEach(
+        missing,
+        fetchPage,
+        onError: (page, e, s) {
+          if (e is CancellationException) return true;
+          log.warning(
+            'failed to download page',
+            attributes: {'chapter_id': chapterId, 'page': page, 'error': '$e'},
+          );
+          pageError ??= e;
+          pageStack ??= s;
+          return false;
+        },
+      );
+      await for (final row in rows) {
+        buffer.add(row);
+        if (buffer.length >= _insertBatchSize) {
+          await _db.downloadDao.insertPagesBatch(List.of(buffer));
+          buffer.clear();
+        }
+      }
+    } finally {
+      // Persist pages fetched before a failure so a retry can resume.
+      if (buffer.isNotEmpty) {
+        await _db.downloadDao.insertPagesBatch(List.of(buffer));
+      }
+      unawaited(pool.close());
+    }
+
+    if (pageError != null) Error.throwWithStackTrace(pageError!, pageStack!);
 
     final volume = await _volumeClient.getVolume(volumeId);
     await downloadMissingCovers(

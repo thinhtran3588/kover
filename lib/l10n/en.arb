@@ -621,6 +621,31 @@
     "@cancelAll": {
         "description": "Label for the cancel all downloads button"
     },
+    "retryAll": "Retry All",
+    "@retryAll": {
+        "description": "Label for the retry all failed downloads button"
+    },
+    "pause": "Pause",
+    "@pause": {
+        "description": "Tooltip for the button that pauses a download"
+    },
+    "resume": "Resume",
+    "@resume": {
+        "description": "Tooltip for the button that resumes a paused download"
+    },
+    "downloadFailed": "Download failed",
+    "@downloadFailed": {
+        "description": "Subtitle shown for a download that failed"
+    },
+    "chaptersLeft": "{count, plural, =1{1 chapter left} other{{count} chapters left}}",
+    "@chaptersLeft": {
+        "description": "Notification text showing how many chapters are left to download",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "noDownloadsInQueue": "No downloads in queue",
     "@noDownloadsInQueue": {
         "description": "Message shown when there are no downloads in the queue"
