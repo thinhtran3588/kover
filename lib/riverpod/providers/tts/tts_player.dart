@@ -147,11 +147,13 @@ class TtsPlayer extends _$TtsPlayer {
         readingListId: cursor.readingListId,
       );
 
-  /// Starts reading at the current position of the reader.
+  /// Starts reading at the current position of the reader, or only shows the
+  /// player paused there when [play] is false.
   Future<void> start({
     required int seriesId,
     required int chapterId,
     required int? readingListId,
+    bool play = true,
   }) async {
     // The player shows before the engine has stopped.
     final interrupted = _interrupt();
@@ -192,6 +194,7 @@ class TtsPlayer extends _$TtsPlayer {
       navState.page,
       scrollId: navState.scrollId,
       segment: _locateSegment(navState.page, navState.subpage),
+      play: play,
     );
   }
 

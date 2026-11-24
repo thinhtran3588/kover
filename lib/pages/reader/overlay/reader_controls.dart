@@ -89,6 +89,9 @@ class ReaderControls extends HookConsumerWidget {
                               seriesId: seriesId,
                               chapterId: chapterId,
                               readingListId: readingListId,
+                              // Opens paused, so the voice and speed can be
+                              // set before reading.
+                              play: false,
                             );
                       },
                     ),
