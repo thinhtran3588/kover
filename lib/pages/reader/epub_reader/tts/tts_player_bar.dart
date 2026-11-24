@@ -103,7 +103,10 @@ class TtsPlayerBar extends ConsumerWidget {
       .idle => '',
     };
 
+    // Only the screen edges the dock sits on are padded.
     return SafeArea(
+      top: rail,
+      left: !rail,
       child: Card.filled(
         margin: LayoutConstants.mediumEdgeInsets,
         child: Padding(

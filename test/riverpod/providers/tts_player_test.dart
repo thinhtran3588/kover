@@ -82,6 +82,8 @@ List<TtsSegment> _segments(String prefix, List<String> blocks) => [
 ];
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late _FakeEngine engine;
   late _FakeReader reader;
   late _FakeReader nextReader;
@@ -193,6 +195,38 @@ void main() {
     engine.finish();
     await pump();
     expect(engine.spoken.last, 'p1-1');
+  });
+
+  test('prefetches the next two segments of the page', () async {
+    await container.read(_nav.future);
+    await startReading();
+
+    expect(engine.prefetched.map((u) => u.text), ['p0-1', 'p0-2']);
+
+    engine.finish();
+    await pump();
+    expect(engine.prefetched.map((u) => u.text), ['p0-1', 'p0-2', 'p0-2']);
+
+    engine.finish();
+    await pump();
+    // The first segment of the next page is never prefetched.
+    expect(engine.prefetched.map((u) => u.text), ['p0-1', 'p0-2', 'p0-2']);
+    expect(engine.spoken.last, 'p0-2');
+  });
+
+  test('prefetch uses the same settings as speak', () async {
+    await container.read(_nav.future);
+    await container.read(ttsSettingsProvider.future);
+    await pump();
+    await startReading();
+    engine.prefetched.clear();
+
+    await container.read(ttsSettingsProvider.notifier).setRate(1.5);
+    await pump();
+
+    expect(engine.spoken.last, 'p0-0');
+    expect(engine.prefetched.map((u) => u.text), ['p0-1', 'p0-2']);
+    expect(engine.prefetched.map((u) => u.rate), [1.5, 1.5]);
   });
 
   test('page advance saves progress through the navigation path', () async {
@@ -436,6 +470,7 @@ void main() {
 
 class _FakeEngine implements TtsEngine {
   final spoken = <String>[];
+  final prefetched = <TtsUtterance>[];
   var stops = 0;
   StreamController<TtsEvent>? _current;
 
@@ -450,6 +485,9 @@ class _FakeEngine implements TtsEngine {
     spoken.add(utterance.text);
     return (_current = StreamController<TtsEvent>()).stream;
   }
+
+  @override
+  void prefetch(TtsUtterance utterance) => prefetched.add(utterance);
 
   @override
   Future<void> stop() async {

@@ -76,6 +76,9 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                         onChanged: notifier.setEngine,
                       ),
                       SelectOption<String?>(
+                        // The dropdown reads its selection once, so it is
+                        // rebuilt when the voices it lists change.
+                        key: ValueKey((settings.engine, shown.length)),
                         icon: KoverIcons.ttsVoice,
                         title: l.ttsVoice,
                         value: settings.voiceName,
@@ -89,8 +92,13 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                               value: voice.name,
                               label: '${voice.name} (${voice.locale})',
                             ),
+                          // Shown while the voice list loads or is offline.
+                          if (settings.voiceName case final name?
+                              when shown.every((voice) => voice.name != name))
+                            SelectOptionEntry(value: name, label: name),
                         ],
                         onChanged: (name) {
+                          if (name == settings.voiceName) return;
                           final voice = shown.firstWhereOrNull(
                             (voice) => voice.name == name,
                           );

@@ -262,22 +262,20 @@ class ReaderOverlay extends HookConsumerWidget {
                           duration: overlayFadeDuration,
                         ),
               ),
-              Align(
-                alignment: .bottomCenter,
-                child:
-                    ReaderControls(
-                          seriesId: seriesId,
-                          chapterId: chapterId,
-                          readingListId: readingListId,
-                          onJumpToPage: onJumpToPage,
-                          extraControls: extraControls,
-                        )
-                        .animate(target: uiVisible.value ? 1.0 : 0.0)
-                        .show(duration: 10.ms, maintain: false)
-                        .fade(duration: overlayFadeDuration),
-              ),
             ],
           );
+
+          final controls =
+              ReaderControls(
+                    seriesId: seriesId,
+                    chapterId: chapterId,
+                    readingListId: readingListId,
+                    onJumpToPage: onJumpToPage,
+                    extraControls: extraControls,
+                  )
+                  .animate(target: uiVisible.value ? 1.0 : 0.0)
+                  .show(duration: 10.ms, maintain: false)
+                  .fade(duration: overlayFadeDuration);
 
           final dock = this.dock;
           final mediaQuery = MediaQuery.of(context);
@@ -306,12 +304,26 @@ class ReaderOverlay extends HookConsumerWidget {
               onNextPage: onNextPage,
               onPreviousPage: onPreviousPage,
               // The same tree with or without the dock, so the reader keeps
-              // its state when the dock comes and goes.
-              child: Flex(
-                direction: rail ? .horizontal : .vertical,
+              // its state when the dock comes and goes. The controls keep
+              // their place at the bottom and the dock sits above them.
+              child: CustomMultiChildLayout(
+                delegate: _DockLayout(
+                  rail: rail,
+                  bottomInset: mediaQuery.padding.bottom,
+                ),
                 children: [
-                  Expanded(child: docked),
-                  ?dock,
+                  LayoutId(id: _DockSlot.content, child: docked),
+                  LayoutId(
+                    id: _DockSlot.controls,
+                    child: rail && dock != null
+                        ? MediaQuery.removePadding(
+                            context: context,
+                            removeRight: true,
+                            child: controls,
+                          )
+                        : controls,
+                  ),
+                  if (dock != null) LayoutId(id: _DockSlot.dock, child: dock),
                 ],
               ),
             ),
@@ -320,4 +332,65 @@ class ReaderOverlay extends HookConsumerWidget {
       ),
     );
   }
+}
+
+enum _DockSlot { content, controls, dock }
+
+/// Lays out the content beside the dock and the controls at the bottom of the
+/// content, or of the screen when the dock is below. A dock below sits above
+/// the controls while they are shown, without moving the content.
+class _DockLayout extends MultiChildLayoutDelegate {
+  final bool rail;
+
+  /// The bottom safe area, which the dock and the controls both pad.
+  final double bottomInset;
+
+  _DockLayout({required this.rail, required this.bottomInset});
+
+  @override
+  void performLayout(Size size) {
+    var dockSize = Size.zero;
+    if (hasChild(_DockSlot.dock)) {
+      dockSize = layoutChild(_DockSlot.dock, BoxConstraints.loose(size));
+    }
+
+    final content = rail
+        ? Size(size.width - dockSize.width, size.height)
+        : Size(size.width, size.height - dockSize.height);
+    layoutChild(_DockSlot.content, BoxConstraints.tight(content));
+    positionChild(_DockSlot.content, Offset.zero);
+
+    final area = rail ? content : size;
+    final controls = layoutChild(
+      _DockSlot.controls,
+      BoxConstraints.loose(area),
+    );
+    positionChild(
+      _DockSlot.controls,
+      Offset(
+        (area.width - controls.width) / 2,
+        area.height - controls.height,
+      ),
+    );
+
+    if (!hasChild(_DockSlot.dock)) return;
+    positionChild(
+      _DockSlot.dock,
+      rail
+          ? Offset(
+              size.width - dockSize.width,
+              (size.height - dockSize.height) / 2,
+            )
+          : Offset(
+              (size.width - dockSize.width) / 2,
+              size.height -
+                  dockSize.height -
+                  (controls.height > 0 ? controls.height - bottomInset : 0),
+            ),
+    );
+  }
+
+  @override
+  bool shouldRelayout(_DockLayout oldDelegate) =>
+      oldDelegate.rail != rail || oldDelegate.bottomInset != bottomInset;
 }

@@ -43,6 +43,8 @@ class ReaderControls extends HookConsumerWidget {
     );
 
     return SafeArea(
+      // Sits at the bottom, and the dock above is placed by its height.
+      top: false,
       minimum: .only(
         bottom: MediaQuery.systemGestureInsetsOf(context).bottom,
       ),

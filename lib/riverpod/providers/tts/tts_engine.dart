@@ -55,5 +55,8 @@ abstract interface class TtsEngine {
   /// silently when [stop] interrupts it.
   Stream<TtsEvent> speak(TtsUtterance utterance);
 
+  /// Starts preparing an utterance that is likely spoken soon; never throws.
+  void prefetch(TtsUtterance utterance);
+
   Future<void> stop();
 }

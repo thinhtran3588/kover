@@ -77,6 +77,9 @@ class NativeTtsEngine implements TtsEngine {
         : const TtsError(message: 'speech engine failed');
   }
 
+  @override
+  void prefetch(TtsUtterance utterance) {}
+
   /// iOS only lists as Now Playing an app that plays audio through a player,
   /// not one that uses the speech synthesizer, so a silent clip loops while
   /// speaking to make the media session controls appear.

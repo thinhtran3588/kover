@@ -59,7 +59,8 @@ Future<String?> ttsLanguage(Ref ref, {required int seriesId}) async =>
     (await ref.watch(seriesMetadataProvider(seriesId: seriesId).future))
         .language;
 
-@riverpod
+/// Kept, as the online voice list is a download.
+@Riverpod(keepAlive: true)
 Future<List<TtsVoice>> ttsVoices(Ref ref) =>
     ref.watch(ttsEngineProvider).voices();
 
@@ -72,6 +73,8 @@ Future<List<TtsVoice>> ttsVoices(Ref ref) =>
 /// completes chapters and opens the next one itself.
 @Riverpod(keepAlive: true)
 class TtsPlayer extends _$TtsPlayer {
+  static const _lookahead = 2;
+
   List<TtsSegment> _segments = const [];
   StreamSubscription<TtsEvent>? _speech;
   ProviderSubscription<AsyncValue<EpubNavigationState>>? _navSubscription;
@@ -105,6 +108,18 @@ class TtsPlayer extends _$TtsPlayer {
     ref.listen(ttsEngineProvider, (_, _) {
       if (state.status == .playing) unawaited(resume());
     });
+    // Replays the sentence with the new voice, speed or pitch.
+    ref.listen(
+      ttsSettingsProvider.select(
+        (s) => (s.value?.voiceName, s.value?.rate, s.value?.pitch),
+      ),
+      (previous, _) {
+        // Settings that just loaded are not a change.
+        if (previous?.$2 != null && state.status == .playing) {
+          unawaited(resume());
+        }
+      },
+    );
     return TtsPlayerState();
   }
 
@@ -138,7 +153,8 @@ class TtsPlayer extends _$TtsPlayer {
     required int chapterId,
     required int? readingListId,
   }) async {
-    await _interrupt();
+    // The player shows before the engine has stopped.
+    final interrupted = _interrupt();
     final generation = _generation;
 
     final nav = epubNavigationProvider(
@@ -156,6 +172,7 @@ class TtsPlayer extends _$TtsPlayer {
         segment: 0,
       ),
     );
+    await interrupted;
 
     _language = await _seriesLanguage(seriesId);
     final navState = await _readyNavState(nav);
@@ -249,8 +266,9 @@ class TtsPlayer extends _$TtsPlayer {
 
   Future<void> pause() async {
     if (state.status != .playing) return;
-    await _interrupt();
+    final interrupted = _interrupt();
     state = state.copyWith(status: .paused);
+    await interrupted;
   }
 
   /// Replays the current segment.
@@ -264,7 +282,9 @@ class TtsPlayer extends _$TtsPlayer {
       await _enterPage(cursor.page);
       return;
     }
-    await _interrupt();
+    final interrupted = _interrupt();
+    state = state.copyWith(status: .playing);
+    await interrupted;
     _speakAt(cursor.segment);
   }
 
@@ -293,13 +313,14 @@ class TtsPlayer extends _$TtsPlayer {
 
   Future<void> stop() async {
     final wasReading = state.cursor != null;
-    await _interrupt();
+    final interrupted = _interrupt();
     _navSubscription?.close();
     _navSubscription = null;
     _readerSubscription?.close();
     _readerSubscription = null;
     _segments = const [];
     state = TtsPlayerState();
+    await interrupted;
     if (wasReading) _syncProgress();
   }
 
@@ -412,16 +433,7 @@ class TtsPlayer extends _$TtsPlayer {
     if (_detached) unawaited(_saveProgress(cursor, _segments[index]));
 
     _speech = _engine
-        .speak(
-          TtsUtterance(
-            text: _segments[index].text,
-            voiceName: settings.voiceName,
-            voiceLocale: settings.voiceLocale,
-            language: _language,
-            rate: settings.rate,
-            pitch: settings.pitch,
-          ),
-        )
+        .speak(_utterance(_segments[index], settings))
         .listen(
           (event) {
             if (generation != _generation) return;
@@ -440,7 +452,20 @@ class TtsPlayer extends _$TtsPlayer {
             _fail('$error');
           },
         );
+    for (final next in _segments.skip(index + 1).take(_lookahead)) {
+      _engine.prefetch(_utterance(next, settings));
+    }
   }
+
+  TtsUtterance _utterance(TtsSegment segment, TtsSettingsState settings) =>
+      TtsUtterance(
+        text: segment.text,
+        voiceName: settings.voiceName,
+        voiceLocale: settings.voiceLocale,
+        language: _language,
+        rate: settings.rate,
+        pitch: settings.pitch,
+      );
 
   Future<void> _saveProgress(TtsCursor cursor, TtsSegment segment) async {
     try {
