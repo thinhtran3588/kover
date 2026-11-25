@@ -1151,6 +1151,52 @@
     "@ttsEngineEdgeDescription": {
         "description": "Privacy note shown under the read aloud engine setting when the online Microsoft Edge engine is available"
     },
+    "ttsEngineVieneu": "VieNeu (offline)",
+    "@ttsEngineVieneu": {
+        "description": "Name of the read aloud speech engine that runs Vietnamese voices on the device"
+    },
+    "ttsEngineVieneuDescription": "Vietnamese voices that run on the device. Needs a one-time download.",
+    "@ttsEngineVieneuDescription": {
+        "description": "Description of the on-device Vietnamese read aloud engine"
+    },
+    "vieneuDownload": "Download voice model (about {size} MB)",
+    "@vieneuDownload": {
+        "description": "Button that downloads the on-device voice model",
+        "placeholders": {
+            "size": {
+                "type": "int"
+            }
+        }
+    },
+    "vieneuDownloading": "Downloading {received} of {total} MB",
+    "@vieneuDownloading": {
+        "description": "Progress of the voice model download",
+        "placeholders": {
+            "received": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "vieneuReady": "Voice model ready",
+    "@vieneuReady": {
+        "description": "Shown when the on-device voice model is downloaded"
+    },
+    "vieneuFailed": "Download failed: {error}",
+    "@vieneuFailed": {
+        "description": "Shown when the voice model download failed",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "vieneuDelete": "Delete voice model",
+    "@vieneuDelete": {
+        "description": "Button that deletes the on-device voice model"
+    },
     "ttsVoice": "Voice",
     "@ttsVoice": {
         "description": "Label for the read aloud voice setting"

@@ -13,6 +13,8 @@ import 'package:kover/riverpod/providers/tts/edge_tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/native_tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_segments.dart';
+import 'package:kover/riverpod/providers/tts/vieneu/vieneu_model.dart';
+import 'package:kover/riverpod/providers/tts/vieneu_tts_engine.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -45,6 +47,16 @@ TtsEngine ttsEngine(Ref ref) {
   final type = ref.watch(ttsSettingsProvider.select((s) => s.value?.engine));
   if (type == .edge && edgeTtsSupported) {
     final engine = EdgeTtsEngine();
+    ref.onDispose(engine.dispose);
+    return engine;
+  }
+  if (type == .vieneu && vieneuTtsSupported) {
+    // The engine is rebuilt when the model is downloaded or deleted, which
+    // also refreshes its voices.
+    ref.watch(
+      vieneuModelProvider.select((s) => s.value is VieneuModelReady),
+    );
+    final engine = VieneuTtsEngine();
     ref.onDispose(engine.dispose);
     return engine;
   }

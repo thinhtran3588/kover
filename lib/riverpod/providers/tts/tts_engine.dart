@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:kover/utils/safe_platform.dart';
 
 /// Whether the platform has a native text-to-speech engine.
@@ -8,6 +10,12 @@ bool get ttsSupported => !SafePlatform.isLinux;
 /// available on Windows.
 bool get edgeTtsSupported =>
     SafePlatform.isAndroid || SafePlatform.isIOS || SafePlatform.isMacOS;
+
+/// Whether the VieNeu offline voice can be used: its libraries are bundled for
+/// 64-bit ARM phones only.
+bool get vieneuTtsSupported =>
+    (SafePlatform.isAndroid || SafePlatform.isIOS) &&
+    (Abi.current() == Abi.androidArm64 || Abi.current() == Abi.iosArm64);
 
 class const TtsVoice({
   required final String name,

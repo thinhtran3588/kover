@@ -56,6 +56,7 @@ sealed class KoverIcons {
   static const IconData ttsPitch = LucideIcons.audioLines;
   static const IconData ttsNextChapter = LucideIcons.chevronsRight;
   static const IconData ttsOnline = LucideIcons.cloud;
+  static const IconData ttsOffline = LucideIcons.cpu;
 
   // Appearance
   static const IconData animation = Icons.animation_sharp;
