@@ -11,3 +11,11 @@ extension IntExtensions on int {
     }
   }
 }
+
+/// Local (on-device) books are opened in the reader with the negated local
+/// book id as series and chapter id. Kavita ids are always positive.
+extension LocalBookIds on int {
+  bool get isLocalBook => this < 0;
+
+  int get localBookId => -this;
+}

@@ -4,6 +4,7 @@ import 'package:kover/pages/reader/overlay/bookmark_button.dart';
 import 'package:kover/pages/reader/overlay/reader_overlay_provider.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/extensions/format.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/widgets/util/async_value.dart';
 import 'package:material_ui/material_ui.dart';
@@ -82,7 +83,8 @@ class ReaderHeader extends ConsumerWidget {
                     icon: const Icon(KoverIcons.tableOfContents),
                     onPressed: () => Scaffold.of(context).openEndDrawer(),
                   )
-                else if (data.reader.series.format.isImage)
+                else if (data.reader.series.format.isImage &&
+                    !chapterId.isLocalBook)
                   BookmarkButton(
                     seriesId: seriesId,
                     chapterId: chapterId,

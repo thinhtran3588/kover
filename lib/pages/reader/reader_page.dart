@@ -11,6 +11,7 @@ import 'package:kover/pages/reader/pdf_reader/pdf_reader.dart';
 import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/providers/settings/common_reader_settings.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/widgets/util/async_value.dart';
 
@@ -39,7 +40,7 @@ class ReaderPage extends HookConsumerWidget {
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) return;
+        if (!didPop || chapterId.isLocalBook) return;
 
         Future.microtask(
           () {

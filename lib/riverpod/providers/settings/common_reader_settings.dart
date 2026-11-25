@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/experimental/persist.dart';
 import 'package:kover/models/read_direction.dart';
-import 'package:kover/riverpod/providers/series.dart';
+import 'package:kover/riverpod/providers/reader/reader.dart';
 import 'package:kover/riverpod/repository/storage_repository.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:riverpod_annotation/experimental/json_persist.dart';
@@ -141,7 +141,7 @@ class CommonReaderSettings extends _$CommonReaderSettings {
 
   Future<String> _seriesFormat() async {
     final series = await ref.read(
-      seriesProvider(
+      readerSeriesProvider(
         seriesId: seriesId,
       ).future,
     );

@@ -7,6 +7,7 @@ import 'package:kover/api/openapi.swagger.dart';
 import 'package:kover/database/app_database.dart';
 import 'package:kover/models/page_content.dart';
 import 'package:kover/utils/epub_font_parser.dart';
+import 'package:kover/utils/epub_html.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:pool/pool.dart';
 
@@ -184,39 +185,10 @@ class BookSyncOperations {
           ).replaceAll(RegExp(r'\s+'), '');
 
           // Replace <svg><image></image></svg> with <img> with embedded base64
-          final imgTag = Element.tag('img');
-          imgTag.attributes['src'] =
-              'data:${imageData.mimeType};base64,$base64img';
-
-          // Copy over width/height if present
-          if (n.attributes['width'] != null) {
-            imgTag.attributes['width'] = n.attributes['width']!;
-          }
-          if (n.attributes['height'] != null) {
-            imgTag.attributes['height'] = n.attributes['height']!;
-          }
-          if (n.attributes.containsKey('style')) {
-            imgTag.attributes['style'] = n.attributes['style']!;
-          }
-          if (n.attributes.containsKey('class')) {
-            imgTag.attributes['class'] = n.attributes['class']!;
-          }
-
-          final svgParent = n.parent;
-          if (svgParent != null && svgParent.localName == 'svg') {
-            final newParent = Element.tag('div');
-
-            if (svgParent.attributes.containsKey('class')) {
-              newParent.attributes['class'] = svgParent.attributes['class']!;
-            }
-            if (svgParent.attributes.containsKey('style')) {
-              newParent.attributes['style'] = svgParent.attributes['style']!;
-            }
-            newParent.append(imgTag);
-            svgParent.replaceWith(newParent);
-          } else {
-            n.replaceWith(imgTag);
-          }
+          replaceSvgImage(
+            n,
+            'data:${imageData.mimeType};base64,$base64img',
+          );
         }
       }
     } finally {

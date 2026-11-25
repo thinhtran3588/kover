@@ -3,7 +3,9 @@ import 'package:kover/models/enums/sort_direction.dart';
 import 'package:kover/models/image_model.dart';
 import 'package:kover/models/series_model.dart';
 import 'package:kover/models/enums/order_by_option.dart';
+import 'package:kover/riverpod/repository/local_library_repository.dart';
 import 'package:kover/riverpod/repository/series_repository.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -130,6 +132,13 @@ Stream<SeriesMetadataModel> seriesMetadata(
   Ref ref, {
   required int seriesId,
 }) {
+  if (seriesId.isLocalBook) {
+    return ref
+        .watch(localLibraryRepositoryProvider)
+        .watchBook(seriesId.localBookId)
+        .map((book) => book.toSeriesMetadata());
+  }
+
   final repo = ref.watch(seriesRepositoryProvider);
   return repo.watchSeriesMetadata(seriesId).distinct();
 }
