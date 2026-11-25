@@ -47,8 +47,8 @@ class MenuPage extends ConsumerWidget {
             SliverAdaptivePadding(
               sliver: SliverMainAxisGroup(
                 slivers: [
+                  SliverHiddenDestinations(kavitaAvailable: loggedIn),
                   if (loggedIn) ...[
-                    const SliverHiddenDestinations(),
                     SliverSection(title: l.libraries),
                     const SliverLibraries(),
                   ],

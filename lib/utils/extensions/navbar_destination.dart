@@ -4,6 +4,7 @@ import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/general_settings.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
+import 'package:kover/utils/safe_platform.dart';
 
 extension NavbarDestinationsExtension on NavbarDestinations {
   IconData get icon {
@@ -14,8 +15,15 @@ extension NavbarDestinationsExtension on NavbarDestinations {
       .collections => KoverIcons.collection,
       .readingLists => KoverIcons.readingList,
       .bookmarks => KoverIcons.bookmarkOn,
+      .localLibrary => KoverIcons.device,
     };
   }
+
+  /// Whether the destination can be shown on the current platform.
+  bool get isSupported => switch (this) {
+    .localLibrary => SafePlatform.supportsLocalLibrary,
+    _ => true,
+  };
 
   String getLabel(AppLocalizations l) {
     return switch (this) {
@@ -25,6 +33,7 @@ extension NavbarDestinationsExtension on NavbarDestinations {
       .collections => l.collections,
       .readingLists => l.readingLists,
       .bookmarks => l.bookmarks,
+      .localLibrary => l.onThisDevice,
     };
   }
 
@@ -36,6 +45,7 @@ extension NavbarDestinationsExtension on NavbarDestinations {
       .collections => const CollectionsRoute(),
       .readingLists => const ReadingListsRoute(),
       .bookmarks => const BookmarksRoute(),
+      .localLibrary => const LocalLibraryRoute(),
     };
   }
 }

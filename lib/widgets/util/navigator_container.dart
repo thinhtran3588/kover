@@ -25,7 +25,8 @@ class NavigatorContainer extends ConsumerWidget {
     final destinations = ref.watch(
       generalSettingsProvider.select(
         (value) => value.whenData(
-          (value) => value.navbarDestinations,
+          (value) =>
+              value.navbarDestinations.where((d) => d.isSupported).toList(),
         ),
       ),
     );

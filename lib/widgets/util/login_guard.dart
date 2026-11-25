@@ -6,6 +6,7 @@ import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/credentials.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
+import 'package:kover/utils/safe_platform.dart';
 
 class LoginGuard extends ConsumerWidget {
   final Widget child;
@@ -44,15 +45,30 @@ class LoginGuard extends ConsumerWidget {
                   horizontal: LayoutConstants.mediumPadding,
                 ),
                 child: Text(
-                  l.noCredentialsDescription,
+                  l.chooseSourceDescription,
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: LayoutConstants.smallPadding),
-              FilledButton(
+              FilledButton.icon(
                 onPressed: () => const SettingsRoute().go(context),
-                child: Text(l.openSettings),
+                icon: const Icon(
+                  KoverIcons.settings,
+                  size: LayoutConstants.smallIcon,
+                ),
+                label: Text(l.connectKavitaServer),
               ),
+              if (SafePlatform.supportsLocalLibrary) ...[
+                const SizedBox(height: LayoutConstants.smallPadding),
+                FilledButton.tonalIcon(
+                  onPressed: () => const LocalLibraryRoute().go(context),
+                  icon: const Icon(
+                    KoverIcons.importFiles,
+                    size: LayoutConstants.smallIcon,
+                  ),
+                  label: Text(l.importFiles),
+                ),
+              ],
             ],
           ),
         ),

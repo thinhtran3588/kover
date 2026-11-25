@@ -41,7 +41,9 @@ class _NavbarEditorSheet extends ConsumerWidget {
       data: (destinations) {
         final hiddenEtries = NavbarDestinations.values
             .where(
-              (destination) => !destinations.contains(destination),
+              (destination) =>
+                  destination.isSupported &&
+                  !destinations.contains(destination),
             )
             .toList();
         final canReorder = destinations.length > 1;

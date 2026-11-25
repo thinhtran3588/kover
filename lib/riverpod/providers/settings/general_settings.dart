@@ -17,7 +17,8 @@ enum NavbarDestinations {
   wantToRead(2),
   collections(3),
   readingLists(4),
-  bookmarks(5);
+  bookmarks(5),
+  localLibrary(6);
 
   const NavbarDestinations(this.value);
 
@@ -32,7 +33,7 @@ sealed class GeneralSettingsState with _$GeneralSettingsState {
     @Default(false) bool sendDiagnostics,
     @Default(null) String? localeString,
     @Default(null) TextDirection? textDirection,
-    @Default(<NavbarDestinations>[.home, .wantToRead])
+    @Default(<NavbarDestinations>[.home, .localLibrary, .wantToRead])
     List<NavbarDestinations> navbarDestinations,
   }) = _GeneralSettingsState;
 
@@ -104,7 +105,11 @@ class GeneralSettings extends _$GeneralSettings {
     log.info('reset navbar destinations');
     state = AsyncData(
       current.copyWith(
-        navbarDestinations: const <NavbarDestinations>[.home, .wantToRead],
+        navbarDestinations: const <NavbarDestinations>[
+          .home,
+          .localLibrary,
+          .wantToRead,
+        ],
       ),
     );
   }

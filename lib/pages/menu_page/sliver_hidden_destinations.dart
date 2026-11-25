@@ -10,7 +10,10 @@ import 'package:material_ui/material_ui.dart';
 class SliverHiddenDestinations extends ConsumerWidget {
   final EdgeInsetsGeometry? padding;
 
-  const new({super.key, this.padding});
+  /// Without a Kavita server only the on-device library can be opened.
+  final bool kavitaAvailable;
+
+  const new({super.key, this.padding, this.kavitaAvailable = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,6 +24,8 @@ class SliverHiddenDestinations extends ConsumerWidget {
           (state) => NavbarDestinations.values
               .where(
                 (destination) =>
+                    destination.isSupported &&
+                    (kavitaAvailable || destination == .localLibrary) &&
                     !state.navbarDestinations.contains(destination),
               )
               .toSet(),

@@ -1,5 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:kover/models/local_book_model.dart';
 import 'package:kover/models/reading_list_model.dart';
+import 'package:kover/pages/local_library/local_book_card.dart';
 import 'package:kover/models/series_model.dart';
 import 'package:kover/riverpod/providers/breakpoints.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
@@ -49,6 +51,18 @@ class HomeSection<T> extends HookConsumerWidget {
     );
   }
 
+  static HomeSection<LocalBookModel> localBooks({
+    required String title,
+    required List<LocalBookModel> items,
+  }) {
+    return HomeSection._(
+      title: title,
+      items: items,
+      itemBuilder: (context, item) =>
+          LocalBookCard(key: ValueKey('$title-${item.id}'), book: item),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -80,12 +94,13 @@ class HomeSection<T> extends HookConsumerWidget {
                       spacing: LayoutConstants.smallPadding,
                       children: [
                         Text(title, style: theme.textTheme.headlineSmall),
-                        Icon(
-                          KoverIcons.chevronRight,
-                          color: theme.colorScheme.onSurfaceVariant.withAlpha(
-                            0xdd,
+                        if (onNavigate != null)
+                          Icon(
+                            KoverIcons.chevronRight,
+                            color: theme.colorScheme.onSurfaceVariant.withAlpha(
+                              0xdd,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),

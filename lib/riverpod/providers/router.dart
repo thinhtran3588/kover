@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kover/pages/download_queue/download_queue_page.dart';
 import 'package:kover/pages/home/home_page.dart';
+import 'package:kover/pages/local_library/local_library_page.dart';
 import 'package:kover/pages/menu_page/menu_page.dart';
 import 'package:kover/pages/on_deck_page/on_deck_page.dart';
 import 'package:kover/pages/collections_page/collections_page.dart';
@@ -130,6 +131,11 @@ GoRouter router(Ref ref) {
         TypedGoRoute<BookmarksRoute>(path: '/bookmarks'),
       ],
     ),
+    TypedStatefulShellBranch<LocalLibraryBranch>(
+      routes: [
+        TypedGoRoute<LocalLibraryRoute>(path: '/local'),
+      ],
+    ),
     TypedStatefulShellBranch<MenuBranch>(
       routes: [
         TypedGoRoute<MenuRoute>(
@@ -187,6 +193,10 @@ class BookmarksBranch extends StatefulShellBranchData {
   const BookmarksBranch();
 }
 
+class LocalLibraryBranch extends StatefulShellBranchData {
+  const LocalLibraryBranch();
+}
+
 class MenuBranch extends StatefulShellBranchData {
   const MenuBranch();
 }
@@ -204,6 +214,14 @@ class WantToReadRoute extends GoRouteData with $WantToReadRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const WantToReadPage();
+}
+
+class LocalLibraryRoute extends GoRouteData with $LocalLibraryRoute {
+  const LocalLibraryRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const LocalLibraryPage();
 }
 
 class MenuRoute extends GoRouteData with $MenuRoute {

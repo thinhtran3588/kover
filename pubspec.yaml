@@ -60,6 +60,7 @@ dependencies:
   archive: ^4.0.7
   sea_g2p:
     path: third_party/sea_g2p
+  file_picker: ^13.4.1
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

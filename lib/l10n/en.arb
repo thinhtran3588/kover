@@ -1224,5 +1224,167 @@
     "readAloudNotificationChannel": "Read aloud playback",
     "@readAloudNotificationChannel": {
         "description": "Name of the notification channel for the media controls shown while reading aloud"
+    },
+    "onThisDevice": "On this device",
+    "@onThisDevice": {
+        "description": "Label for the on-device library destination and page title"
+    },
+    "addBooks": "Add books",
+    "@addBooks": {
+        "description": "Label for the button that adds books to the on-device library"
+    },
+    "importFiles": "Import files",
+    "@importFiles": {
+        "description": "Label for the action that imports book files from the device"
+    },
+    "importFilesSubtitle": "EPUB, PDF, CBZ",
+    "@importFilesSubtitle": {
+        "description": "Subtitle listing the book file types that can be imported"
+    },
+    "importingProgress": "Importing {done} of {total}…",
+    "@importingProgress": {
+        "description": "Progress text shown while book files are imported",
+        "placeholders": {
+            "done": {
+                "description": "Number of files imported so far",
+                "type": "int",
+                "example": "2"
+            },
+            "total": {
+                "description": "Total number of files being imported",
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "importedBooks": "{count, plural, =1{Imported 1 book} other{Imported {count} books}}",
+    "@importedBooks": {
+        "description": "Part of the import summary: how many books were imported",
+        "placeholders": {
+            "count": {
+                "description": "Number of books imported",
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "importSkippedDuplicates": "{count} already in library",
+    "@importSkippedDuplicates": {
+        "description": "Part of the import summary: how many files were already in the library",
+        "placeholders": {
+            "count": {
+                "description": "Number of duplicate files",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "importSkippedUnsupported": "{count} unsupported",
+    "@importSkippedUnsupported": {
+        "description": "Part of the import summary: how many files have an unsupported format",
+        "placeholders": {
+            "count": {
+                "description": "Number of unsupported files",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "importFailedCount": "{count} failed",
+    "@importFailedCount": {
+        "description": "Part of the import summary: how many files could not be imported",
+        "placeholders": {
+            "count": {
+                "description": "Number of files that failed",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "open": "Open",
+    "@open": {
+        "description": "Label for the action that opens an item"
+    },
+    "localLibraryEmptyTitle": "No books on this device yet",
+    "@localLibraryEmptyTitle": {
+        "description": "Title of the empty on-device library"
+    },
+    "localLibraryEmptyDescription": "Import EPUB, PDF or CBZ files to read them here, with or without a server.",
+    "@localLibraryEmptyDescription": {
+        "description": "Description of the empty on-device library"
+    },
+    "noMatchingBooks": "No books match your filter",
+    "@noMatchingBooks": {
+        "description": "Message shown when the on-device library filter has no results"
+    },
+    "bookInfo": "Book info",
+    "@bookInfo": {
+        "description": "Label for the action that shows details about an on-device book"
+    },
+    "deleteBook": "Delete book",
+    "@deleteBook": {
+        "description": "Label for the action that deletes an on-device book"
+    },
+    "deleteBookConfirm": "Delete \"{title}\" from this device? This cannot be undone.",
+    "@deleteBookConfirm": {
+        "description": "Confirmation text before deleting an on-device book",
+        "placeholders": {
+            "title": {
+                "description": "Title of the book",
+                "type": "String",
+                "example": "Dune"
+            }
+        }
+    },
+    "bookDeleted": "Deleted \"{title}\"",
+    "@bookDeleted": {
+        "description": "Snackbar text shown after an on-device book was deleted",
+        "placeholders": {
+            "title": {
+                "description": "Title of the book",
+                "type": "String",
+                "example": "Dune"
+            }
+        }
+    },
+    "author": "Author",
+    "@author": {
+        "description": "Label for the author of a book"
+    },
+    "bookFormat": "Format",
+    "@bookFormat": {
+        "description": "Label for the file format of a book"
+    },
+    "bookFileName": "File name",
+    "@bookFileName": {
+        "description": "Label for the file name of a book"
+    },
+    "bookFileSize": "File size",
+    "@bookFileSize": {
+        "description": "Label for the file size of a book"
+    },
+    "bookSource": "Source",
+    "@bookSource": {
+        "description": "Label for where a book comes from"
+    },
+    "sourceDevice": "This device",
+    "@sourceDevice": {
+        "description": "Source label for books imported from this device"
+    },
+    "sourceGoogleDrive": "Google Drive",
+    "@sourceGoogleDrive": {
+        "description": "Source label for books downloaded from Google Drive"
+    },
+    "chooseSourceDescription": "Connect to a Kavita server, or import books to read them on this device.",
+    "@chooseSourceDescription": {
+        "description": "Description shown on server pages when no server is configured"
+    },
+    "connectKavitaServer": "Connect to Kavita server",
+    "@connectKavitaServer": {
+        "description": "Label for the button that opens the server settings"
+    },
+    "allBooks": "All books",
+    "@allBooks": {
+        "description": "Header of the list of all books in the on-device library"
     }
 }
