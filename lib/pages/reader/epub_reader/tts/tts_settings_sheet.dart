@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/riverpod/providers/series.dart';
 import 'package:kover/riverpod/providers/settings/tts_settings.dart';
+import 'package:kover/pages/reader/epub_reader/tts/vieneu_model_tile.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/tts_player.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
@@ -56,9 +57,13 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                       ),
                       ChoiceOption<TtsEngineType>(
                         title: l.ttsEngine,
-                        description: edgeTtsSupported
-                            ? l.ttsEngineEdgeDescription
-                            : null,
+                        description: switch (settings.engine) {
+                          .edge when edgeTtsSupported =>
+                            l.ttsEngineEdgeDescription,
+                          .vieneu when vieneuTtsSupported =>
+                            l.ttsEngineVieneuDescription,
+                          _ => null,
+                        },
                         value: settings.engine,
                         options: [
                           ChoiceOptionEntry(
@@ -72,9 +77,17 @@ class TtsSettingsBottomSheet extends ConsumerWidget {
                               label: l.ttsEngineEdge,
                               icon: KoverIcons.ttsOnline,
                             ),
+                          if (vieneuTtsSupported)
+                            ChoiceOptionEntry(
+                              value: .vieneu,
+                              label: l.ttsEngineVieneu,
+                              icon: KoverIcons.ttsOffline,
+                            ),
                         ],
                         onChanged: notifier.setEngine,
                       ),
+                      if (settings.engine == .vieneu && vieneuTtsSupported)
+                        const VieneuModelTile(),
                       SelectOption<String?>(
                         // The dropdown reads its selection once, so it is
                         // rebuilt when the voices it lists change.

@@ -45,7 +45,7 @@ class TtsPlayerBar extends ConsumerWidget {
         tooltip: l.readAloudPreviousSentence,
         onPressed: player.previous,
       ),
-      IconButton.filled(
+      IconButton(
         iconSize: LayoutConstants.largeIcon,
         constraints: const BoxConstraints.tightFor(
           width: LayoutConstants.minTapTarget,

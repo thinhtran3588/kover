@@ -1,0 +1,12 @@
+name: sea_g2p
+description: Dart bindings and prebuilt libraries for sea-g2p, a Vietnamese text-to-phoneme library.
+publish_to: none
+version: 0.10.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  code_assets: ^2.2.0
+  hooks: ^2.2.0
+  ffi: ^2.1.0

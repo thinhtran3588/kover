@@ -34,7 +34,7 @@ packages:
     source: hosted
     version: "2.0.3"
   archive:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: archive
       sha256: de5ac590b8155e4e676088d714bd41ea620449a6adc0f7950c5073874b287ddb
@@ -1035,6 +1035,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
+  onnxruntime_plus:
+    dependency: "direct main"
+    description:
+      path: "third_party/onnxruntime_plus"
+      relative: true
+    source: path
+    version: "1.5.0"
   package_config:
     dependency: transitive
     description:
@@ -1307,6 +1314,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.27.3"
+  sea_g2p:
+    dependency: "direct main"
+    description:
+      path: "third_party/sea_g2p"
+      relative: true
+    source: path
+    version: "0.10.0"
   sentry:
     dependency: transitive
     description:

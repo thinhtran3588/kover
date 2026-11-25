@@ -14,6 +14,9 @@ enum TtsEngineType {
 
   /// Microsoft Edge's online neural voices.
   edge,
+
+  /// The VieNeu offline voices, run on the device.
+  vieneu,
 }
 
 sealed class TtsSettingsLimits {

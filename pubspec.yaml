@@ -2,7 +2,7 @@ name: kover
 description: "An unofficial cross-platform Kavita frontend."
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.13.0
@@ -56,6 +56,10 @@ dependencies:
   audio_session: ^0.2.4
   just_audio: ^0.10.6
   flutter_foreground_task: ^11.0.3
+  onnxruntime_plus: ^1.5.0
+  archive: ^4.0.7
+  sea_g2p:
+    path: third_party/sea_g2p
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:
@@ -99,3 +103,5 @@ sentry:
 dependency_overrides:
   flutter_tts:
     path: third_party/flutter_tts
+  onnxruntime_plus:
+    path: third_party/onnxruntime_plus
