@@ -55,6 +55,7 @@ dependencies:
   audio_service: ^0.18.19
   audio_session: ^0.2.4
   just_audio: ^0.10.6
+  flutter_foreground_task: ^11.0.3
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

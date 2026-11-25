@@ -126,6 +126,9 @@ sealed class KoverIcons {
   static const IconData download = LucideIcons.download;
   static const IconData downloading = LucideIcons.refreshCw;
   static const IconData queued = LucideIcons.hourglass;
+  static const IconData downloadFailed = LucideIcons.circleAlert;
+  static const IconData downloadPaused = LucideIcons.pause;
+  static const IconData resume = LucideIcons.play;
   static const IconData refreshCovers = LucideIcons.imageDown;
   static const IconData refresh = LucideIcons.refreshCw;
   static const IconData copy = LucideIcons.copy;

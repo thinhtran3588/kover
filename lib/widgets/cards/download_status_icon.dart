@@ -41,6 +41,16 @@ class DownloadStatusIcon extends StatelessWidget {
         color: iconColor,
         size: LayoutConstants.smallIcon,
       ),
+      failed: (_) => Icon(
+        KoverIcons.downloadFailed,
+        color: theme.colorScheme.error,
+        size: LayoutConstants.smallIcon,
+      ),
+      paused: (_) => Icon(
+        KoverIcons.downloadPaused,
+        color: iconColor,
+        size: LayoutConstants.smallIcon,
+      ),
     );
 
     return Card(

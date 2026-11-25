@@ -192,12 +192,21 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => appDatabaseMigration(this);
 
+  // `CommonDatabase` comes from sqlite3, which is not a direct dependency.
+  static void _setupConnection(dynamic db) =>
+      db.execute('PRAGMA busy_timeout = 10000;');
+
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: dbName,
       native: const DriftNativeOptions(
         databaseDirectory: getApplicationSupportDirectory,
         shareAcrossIsolates: true,
+        // drift_flutter can open a second connection when the shared isolate
+        // is slow to answer (e.g. under load). Wait for locks instead of
+        // failing with "database is locked", which would poison the
+        // connection for the rest of the session.
+        setup: _setupConnection,
       ),
       web: DriftWebOptions(
         sqlite3Wasm: Uri.parse('sqlite3.wasm'),

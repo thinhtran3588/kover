@@ -6,6 +6,23 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'client.g.dart';
 
+/// Skips JSON decoding for non-JSON bodies (images, PDFs, fonts), which the
+/// generated converter would otherwise needlessly turn into strings.
+class _ContentAwareConverter extends $JsonSerializableConverter {
+  @override
+  FutureOr<Response<ResultType>> convertResponse<ResultType, Item>(
+    Response response,
+  ) {
+    final contentType = response.headers['content-type'];
+    if (contentType != null &&
+        !contentType.contains('json') &&
+        !contentType.startsWith('text/')) {
+      return response.copyWith<ResultType>();
+    }
+    return super.convertResponse<ResultType, Item>(response);
+  }
+}
+
 ChopperClient getChopperClient(
   Uri uri,
   String apiKey, {
@@ -24,7 +41,7 @@ ChopperClient getChopperClient(
         ...customHeaders,
       }),
     ],
-    converter: $JsonSerializableConverter(),
+    converter: _ContentAwareConverter(),
   );
 }
 
@@ -57,7 +74,7 @@ ChopperClient authenticatedClient(Ref ref) {
         ...settings.customHeaders,
       }),
     ],
-    converter: $JsonSerializableConverter(),
+    converter: _ContentAwareConverter(),
   );
 
   return client;

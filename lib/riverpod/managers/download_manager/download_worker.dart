@@ -7,9 +7,6 @@ import 'package:kover/riverpod/managers/download_manager/download_engine.dart';
 import 'package:kover/utils/cancellation_token.dart';
 import 'package:kover/utils/logging.dart';
 
-/// Timeout applied to a single chapter download.
-const _downloadTimeout = Duration(minutes: 5);
-
 class const DownloadWorkerArgs({
   required final SendPort sendPort,
   required final RootIsolateToken rootIsolateToken,
@@ -95,12 +92,10 @@ class RootDownloadWorker implements DownloadWorker {
     _tokens[requestId] = token;
 
     try {
-      await _engine
-          .downloadChapter(
-            chapterId: chapterId,
-            cancellationToken: token,
-          )
-          .timeout(_downloadTimeout, onTimeout: token.cancel);
+      await _engine.downloadChapter(
+        chapterId: chapterId,
+        cancellationToken: token,
+      );
     } finally {
       _tokens.remove(requestId);
     }
@@ -258,12 +253,10 @@ class IsolatedDownloadWorker implements DownloadWorker {
       tokens[requestId] = token;
 
       try {
-        await engine
-            .downloadChapter(
-              chapterId: chapterId,
-              cancellationToken: token,
-            )
-            .timeout(_downloadTimeout, onTimeout: token.cancel);
+        await engine.downloadChapter(
+          chapterId: chapterId,
+          cancellationToken: token,
+        );
         args.sendPort.send((requestId, null));
       } catch (e, stacktrace) {
         args.sendPort.send((
