@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kover/pages/download_queue/download_queue_page.dart';
 import 'package:kover/pages/home/home_page.dart';
+import 'package:kover/pages/google_drive/google_drive_page.dart';
 import 'package:kover/pages/local_library/local_library_page.dart';
 import 'package:kover/pages/menu_page/menu_page.dart';
 import 'package:kover/pages/on_deck_page/on_deck_page.dart';
@@ -133,7 +134,17 @@ GoRouter router(Ref ref) {
     ),
     TypedStatefulShellBranch<LocalLibraryBranch>(
       routes: [
-        TypedGoRoute<LocalLibraryRoute>(path: '/local'),
+        TypedGoRoute<LocalLibraryRoute>(
+          path: '/local',
+          routes: [
+            TypedGoRoute<GoogleDriveRoute>(
+              path: 'drive',
+              routes: [
+                TypedGoRoute<GoogleDriveFolderRoute>(path: ':folderId'),
+              ],
+            ),
+          ],
+        ),
       ],
     ),
     TypedStatefulShellBranch<MenuBranch>(
@@ -222,6 +233,25 @@ class LocalLibraryRoute extends GoRouteData with $LocalLibraryRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const LocalLibraryPage();
+}
+
+class GoogleDriveRoute extends GoRouteData with $GoogleDriveRoute {
+  const GoogleDriveRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const DriveBrowserPage();
+}
+
+class GoogleDriveFolderRoute extends GoRouteData with $GoogleDriveFolderRoute {
+  final String folderId;
+  final String? name;
+
+  const GoogleDriveFolderRoute({required this.folderId, this.name});
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      DriveBrowserPage(folderId: folderId, title: name);
 }
 
 class MenuRoute extends GoRouteData with $MenuRoute {

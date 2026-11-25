@@ -2,12 +2,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/pages/local_library/local_book_card.dart';
 import 'package:kover/riverpod/managers/local_import_manager.dart';
+import 'package:kover/utils/constants/google_drive_config.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The ways to add books to the on-device library.
-enum AddBooksAction { importFiles }
+enum AddBooksAction { importFiles, googleDrive }
 
 /// Shows the sheet that lets the user choose how to add books, and returns
 /// the chosen action.
@@ -50,6 +51,18 @@ class AddBooksSheet extends StatelessWidget {
             subtitle: Text(l.importFilesSubtitle),
             onTap: () => Navigator.of(context).pop(AddBooksAction.importFiles),
           ),
+          if (GoogleDriveConfig.isSupportedPlatform)
+            ListTile(
+              leading: const Icon(KoverIcons.cloud),
+              title: Text(l.sourceGoogleDrive),
+              subtitle: Text(
+                GoogleDriveConfig.isConfigured
+                    ? l.driveSubtitle
+                    : l.driveNotSetUp,
+              ),
+              onTap: () =>
+                  Navigator.of(context).pop(AddBooksAction.googleDrive),
+            ),
         ],
       ),
     );

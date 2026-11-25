@@ -1,4 +1,5 @@
 import 'package:kover/pages/menu_page/sliver_hidden_destinations.dart';
+import 'package:kover/utils/constants/google_drive_config.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/widgets/util/sliver_adaptive_padding.dart';
 import 'package:material_ui/material_ui.dart';
@@ -57,6 +58,12 @@ class MenuPage extends ConsumerWidget {
                     child: Column(
                       spacing: LayoutConstants.listSpacing,
                       children: [
+                        if (GoogleDriveConfig.isSupportedPlatform)
+                          AppListTile(
+                            title: l.sourceGoogleDrive,
+                            icon: const Icon(KoverIcons.cloud),
+                            onTap: () => const GoogleDriveRoute().push(context),
+                          ),
                         AppListTile(
                           title: l.downloadQueue,
                           icon: isDownloading

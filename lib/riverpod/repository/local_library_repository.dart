@@ -137,6 +137,11 @@ class LocalLibraryRepository {
 
   Stream<Set<String>> watchDriveIds() => _db.localBooksDao.watchRemoteIds();
 
+  /// The id of the local book downloaded from Drive file [remoteId].
+  Future<int?> findDriveBookId(String remoteId) async {
+    return (await _db.localBooksDao.findByRemoteId(remoteId))?.id;
+  }
+
   Future<File> fileFor(LocalBookModel book) async {
     final support = await _supportDirectory();
     return File(p.join(support.path, book.filePath));

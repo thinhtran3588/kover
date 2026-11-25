@@ -1386,5 +1386,84 @@
     "allBooks": "All books",
     "@allBooks": {
         "description": "Header of the list of all books in the on-device library"
+    },
+    "myDrive": "My Drive",
+    "@myDrive": {
+        "description": "Segment label for the files of the signed in Google Drive account"
+    },
+    "sharedWithMe": "Shared with me",
+    "@sharedWithMe": {
+        "description": "Segment label for the files shared with the Google Drive account"
+    },
+    "signInWithGoogle": "Sign in with Google",
+    "@signInWithGoogle": {
+        "description": "Button that signs in to Google Drive"
+    },
+    "signOutGoogle": "Sign out",
+    "@signOutGoogle": {
+        "description": "Menu item that signs out of Google Drive"
+    },
+    "driveSignedOutTitle": "Read books from Google Drive",
+    "@driveSignedOutTitle": {
+        "description": "Title shown when not signed in to Google Drive"
+    },
+    "driveSignedOutDescription": "Kover only asks for read-only access. Books you open are downloaded to this device.",
+    "@driveSignedOutDescription": {
+        "description": "Description shown when not signed in to Google Drive"
+    },
+    "driveNotConfiguredTitle": "Google Drive isn't set up in this build",
+    "@driveNotConfiguredTitle": {
+        "description": "Title shown when the build has no Google OAuth client IDs"
+    },
+    "driveNotConfiguredDescription": "Building Kover with Google OAuth client IDs enables browsing Google Drive. See docs/google-drive-setup.md.",
+    "@driveNotConfiguredDescription": {
+        "description": "Description shown when the build has no Google OAuth client IDs"
+    },
+    "driveNotSupported": "Google Drive is available on Android and iOS",
+    "@driveNotSupported": {
+        "description": "Shown on platforms without Google Drive support"
+    },
+    "driveNotSetUp": "Not set up",
+    "@driveNotSetUp": {
+        "description": "Subtitle of the Google Drive entry when the build has no OAuth client IDs"
+    },
+    "driveSubtitle": "Browse and download books",
+    "@driveSubtitle": {
+        "description": "Subtitle of the Google Drive entry in the add books sheet"
+    },
+    "browseGoogleDrive": "Browse Google Drive",
+    "@browseGoogleDrive": {
+        "description": "Button that opens the Google Drive browser"
+    },
+    "driveEmptyFolder": "No supported books here",
+    "@driveEmptyFolder": {
+        "description": "Shown when a Google Drive folder has no folders or supported books"
+    },
+    "driveOffline": "You're offline. Downloaded books are still on This device.",
+    "@driveOffline": {
+        "description": "Shown when Google Drive cannot be reached"
+    },
+    "driveLoadError": "Could not load Google Drive",
+    "@driveLoadError": {
+        "description": "Shown when listing Google Drive failed"
+    },
+    "searchDrive": "Search Google Drive",
+    "@searchDrive": {
+        "description": "Hint of the Google Drive search field"
+    },
+    "downloadedBook": "Downloaded {name}",
+    "@downloadedBook": {
+        "description": "Snackbar shown when a book finished downloading from Google Drive",
+        "placeholders": {
+            "name": { "type": "String" }
+        }
+    },
+    "cancelDownload": "Cancel download",
+    "@cancelDownload": {
+        "description": "Tooltip of the button that cancels a download"
+    },
+    "sourceAll": "All",
+    "@sourceAll": {
+        "description": "Filter chip that shows books from every source"
     }
 }

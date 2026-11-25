@@ -42,6 +42,9 @@ void main() {
       ProviderScope(
         overrides: [
           localBooksProvider().overrideWith((_) => Stream.value(books)),
+          localBooksProvider(source: .googleDrive).overrideWith(
+            (_) => Stream.value(const []),
+          ),
           localContinueReadingProvider.overrideWith(
             (_) => Stream.value(const []),
           ),

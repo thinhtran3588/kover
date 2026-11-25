@@ -70,3 +70,6 @@ sentry.properties
 
 AGENTS.md
 CLAUDE.md
+
+# Google Drive OAuth client IDs
+/config/google_drive.json

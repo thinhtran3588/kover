@@ -2,12 +2,15 @@ import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
+import 'package:kover/models/enums/local_book_source.dart';
 import 'package:kover/models/local_book_model.dart';
 import 'package:kover/pages/home/home_section.dart';
 import 'package:kover/pages/local_library/add_books_sheet.dart';
 import 'package:kover/pages/local_library/local_book_card.dart';
 import 'package:kover/riverpod/managers/local_import_manager.dart';
 import 'package:kover/riverpod/providers/local_library.dart';
+import 'package:kover/riverpod/providers/router.dart';
+import 'package:kover/utils/constants/google_drive_config.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/widgets/context_menu/context_menu_button.dart';
@@ -26,7 +29,13 @@ class LocalLibraryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final books = ref.watch(localBooksProvider());
+    final hasDriveBooks =
+        ref.watch(localBooksProvider(source: .googleDrive)).value?.isNotEmpty ??
+        false;
+    final selectedSource = useState<LocalBookSource?>(null);
+    // The filter only exists while there are Drive books.
+    final source = hasDriveBooks ? selectedSource.value : null;
+    final books = ref.watch(localBooksProvider(source: source));
     final progress = ref.watch(localImportProvider);
     final filterController = useTextEditingController();
     final sort = useState(_LocalSort.lastRead);
@@ -38,6 +47,8 @@ class LocalLibraryPage extends HookConsumerWidget {
       switch (action) {
         case .importFiles:
           await importBooks(context, ref);
+        case .googleDrive:
+          await const GoogleDriveRoute().push<void>(context);
       }
     }
 
@@ -87,6 +98,9 @@ class LocalLibraryPage extends HookConsumerWidget {
               filterController: filterController,
               sort: sort.value,
               onAdd: add,
+              source: source,
+              showSourceFilter: hasDriveBooks,
+              onSource: (value) => selectedSource.value = value,
             ),
           ),
           const SliverBottomPadding(),
@@ -136,12 +150,18 @@ class _LibraryBody extends HookConsumerWidget {
   final TextEditingController filterController;
   final _LocalSort sort;
   final VoidCallback onAdd;
+  final LocalBookSource? source;
+  final bool showSourceFilter;
+  final ValueChanged<LocalBookSource?> onSource;
 
   const _LibraryBody({
     required this.books,
     required this.filterController,
     required this.sort,
     required this.onAdd,
+    required this.source,
+    required this.showSourceFilter,
+    required this.onSource,
   });
 
   @override
@@ -156,7 +176,12 @@ class _LibraryBody extends HookConsumerWidget {
     if (books.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: _EmptyState(onImport: onAdd),
+        child: _EmptyState(
+          onImport: onAdd,
+          onDrive: GoogleDriveConfig.isSupportedPlatform
+              ? () => const GoogleDriveRoute().push<void>(context)
+              : null,
+        ),
       );
     }
 
@@ -192,6 +217,29 @@ class _LibraryBody extends HookConsumerWidget {
               child: FilterInputField(controller: filterController),
             ),
           ),
+          if (showSourceFilter)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const .symmetric(
+                  horizontal: LayoutConstants.mediumPadding,
+                ),
+                child: Wrap(
+                  spacing: LayoutConstants.smallPadding,
+                  children: [
+                    for (final (label, value) in [
+                      (l.sourceAll, null),
+                      (l.sourceDevice, LocalBookSource.device),
+                      (l.sourceGoogleDrive, LocalBookSource.googleDrive),
+                    ])
+                      ChoiceChip(
+                        label: Text(label),
+                        selected: source == value,
+                        onSelected: (_) => onSource(value),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           if (showContinue) ...[
             HomeSection.localBooks(
               title: l.continueReading,
@@ -244,8 +292,9 @@ class _LibraryBody extends HookConsumerWidget {
 
 class _EmptyState extends StatelessWidget {
   final VoidCallback onImport;
+  final VoidCallback? onDrive;
 
-  const _EmptyState({required this.onImport});
+  const _EmptyState({required this.onImport, required this.onDrive});
 
   @override
   Widget build(BuildContext context) {
@@ -282,6 +331,14 @@ class _EmptyState extends StatelessWidget {
               icon: const Icon(KoverIcons.importFiles),
               label: Text(l.importFiles),
             ),
+            if (onDrive != null) ...[
+              const SizedBox(height: LayoutConstants.smallPadding),
+              OutlinedButton.icon(
+                onPressed: onDrive,
+                icon: const Icon(KoverIcons.cloud),
+                label: Text(l.browseGoogleDrive),
+              ),
+            ],
           ],
         ),
       ),

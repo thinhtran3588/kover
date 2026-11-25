@@ -4,7 +4,8 @@
 # Each run bumps the build number in pubspec.yaml once the build succeeds.
 # Signing comes from KOVER_KEYS_ENV (default ~/keys/kover-release.env), which
 # exports KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD and,
-# optionally, SENTRY_DSN. Extra arguments go to `flutter build apk`, e.g.
+# optionally, SENTRY_DSN. config/google_drive.json, when present, enables
+# Google Drive (see docs/google-drive-setup.md). Extra arguments go to `flutter build apk`, e.g.
 # `--target-platform android-arm64` to build only that ABI.
 set -euo pipefail
 
@@ -34,6 +35,10 @@ build=$((BASH_REMATCH[2] + 1))
 defines=()
 if [[ -n "${SENTRY_DSN:-}" ]]; then
   defines+=(--dart-define="SENTRY_DSN=$SENTRY_DSN")
+fi
+
+if [[ -f config/google_drive.json ]]; then
+  defines+=(--dart-define-from-file=config/google_drive.json)
 fi
 
 out=build/app/outputs/flutter-apk

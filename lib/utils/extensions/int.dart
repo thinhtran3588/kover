@@ -10,6 +10,14 @@ extension IntExtensions on int {
       return toString();
     }
   }
+
+  /// A file size such as `2.3 MB`.
+  String prettyBytes() {
+    const mb = 1024 * 1024;
+    return this >= mb
+        ? '${(this / mb).toStringAsFixed(1)} MB'
+        : '${(this / 1024).ceil()} KB';
+  }
 }
 
 /// Local (on-device) books are opened in the reader with the negated local
