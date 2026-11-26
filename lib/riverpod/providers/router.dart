@@ -1,3 +1,4 @@
+import 'package:kover/pages/favorites/favorites_page.dart';
 import 'package:kover/pages/recently_added_page/recently_added_page.dart';
 import 'package:kover/pages/recently_updated_page/recently_updated_page.dart';
 import 'package:material_ui/material_ui.dart';
@@ -26,7 +27,6 @@ import 'package:kover/pages/series_detail_page/volumes_page/volumes_page.dart';
 import 'package:kover/pages/settings/local_logs/local_logs_page.dart';
 import 'package:kover/pages/settings/settings_page.dart';
 import 'package:kover/pages/settings/settings_section.dart';
-import 'package:kover/pages/want_to_read_page/want_to_read_page.dart';
 import 'package:kover/widgets/util/navigator_container.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -102,7 +102,7 @@ GoRouter router(Ref ref) {
     ),
     TypedStatefulShellBranch<WantToReadBranch>(
       routes: [
-        TypedGoRoute<WantToReadRoute>(path: '/want-to-read'),
+        TypedGoRoute<FavoritesRoute>(path: '/favorites'),
       ],
     ),
     TypedStatefulShellBranch<CollectionsBranch>(
@@ -221,12 +221,14 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
 }
 
-class WantToReadRoute extends GoRouteData with $WantToReadRoute {
-  const WantToReadRoute();
+class FavoritesRoute extends GoRouteData with $FavoritesRoute {
+  final ReadingSource? source;
+
+  const FavoritesRoute({this.source});
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const WantToReadPage();
+      FavoritesPage(source: source);
 }
 
 class LibraryRoute extends GoRouteData with $LibraryRoute {

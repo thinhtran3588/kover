@@ -24,7 +24,7 @@
     "@home": {
         "description": "Label for the home page"
     },
-    "wantToRead": "Want To Read",
+    "wantToRead": "Favorites",
     "@wantToRead": {
         "description": "Label for the want to read shelf"
     },
@@ -414,11 +414,11 @@
     "@imIn": {
         "description": "Label for the accept button in the monitoring opt-out dialog"
     },
-    "addToWantToRead": "Add to Want to Read",
+    "addToWantToRead": "Add to favorites",
     "@addToWantToRead": {
         "description": "Label for the add to want to read context menu item"
     },
-    "removeFromWantToRead": "Remove from Want to Read",
+    "removeFromWantToRead": "Remove from favorites",
     "@removeFromWantToRead": {
         "description": "Label for the remove from want to read context menu item"
     },
@@ -1316,6 +1316,14 @@
     "noMatchingBooks": "No books match your filter",
     "@noMatchingBooks": {
         "description": "Message shown when the on-device library filter has no results"
+    },
+    "noFavoritesTitle": "No favorites yet",
+    "@noFavoritesTitle": {
+        "description": "Title of an empty favorites tab"
+    },
+    "noFavoritesDescription": "Long press a book and choose Add to favorites to find it here.",
+    "@noFavoritesDescription": {
+        "description": "Description of an empty favorites tab"
     },
     "bookInfo": "Book info",
     "@bookInfo": {

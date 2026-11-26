@@ -37,7 +37,7 @@ extension NavbarDestinationsExtension on NavbarDestinations {
     return switch (this) {
       .home => const HomeRoute(),
       .allSeries => const AllSeriesRoute(),
-      .wantToRead => const WantToReadRoute(),
+      .wantToRead => const FavoritesRoute(),
       .collections => const CollectionsRoute(),
       .readingLists => const ReadingListsRoute(),
       .bookmarks => const BookmarksRoute(),

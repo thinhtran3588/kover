@@ -47,7 +47,7 @@ void main() {
 
       await takePageScreenshot(
         "want_to_read",
-        route: const WantToReadRoute().location,
+        route: const FavoritesRoute().location,
         tester: tester,
         container: container,
         binding: binding,

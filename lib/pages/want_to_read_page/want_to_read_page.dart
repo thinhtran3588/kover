@@ -7,23 +7,12 @@ import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/want_to_read.dart';
 import 'package:kover/widgets/list_page/series_list_page.dart';
 import 'package:kover/widgets/list_page/sort_options_menu.dart';
-import 'package:kover/widgets/util/login_guard.dart';
 import 'package:material_ui/material_ui.dart';
 
-class WantToReadPage extends StatelessWidget {
-  const WantToReadPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      extendBody: true,
-      body: LoginGuard(child: WantToReadPageContent()),
-    );
-  }
-}
-
 class WantToReadPageContent extends HookConsumerWidget {
-  const WantToReadPageContent({super.key});
+  final bool showAppBar;
+
+  const WantToReadPageContent({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,6 +40,7 @@ class WantToReadPageContent extends HookConsumerWidget {
 
     return SeriesListPage(
       title: l.wantToRead,
+      showAppBar: showAppBar,
       controller: controller,
       sortMenu: UnorderedSortMenu(
         sortDirection: sortDirection.value,

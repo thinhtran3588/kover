@@ -54,11 +54,13 @@ class LocalBooksView extends HookConsumerWidget {
 
     return Scaffold(
       extendBody: true,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: isDevice && progress != null ? null : add,
-        icon: Icon(isDevice ? KoverIcons.importFiles : KoverIcons.cloud),
-        label: Text(isDevice ? l.importFiles : l.browseGoogleDrive),
-      ),
+      floatingActionButton: favoritesOnly
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: isDevice && progress != null ? null : add,
+              icon: Icon(isDevice ? KoverIcons.importFiles : KoverIcons.cloud),
+              label: Text(isDevice ? l.importFiles : l.browseGoogleDrive),
+            ),
       body: CustomScrollView(
         keyboardDismissBehavior: .onDrag,
         slivers: [
@@ -69,6 +71,7 @@ class LocalBooksView extends HookConsumerWidget {
             data: (books) => _LibraryBody(
               books: books,
               source: source,
+              favoritesOnly: favoritesOnly,
               filterController: filterController,
               sort: sort.value,
               onSort: (value) => sort.value = value,
@@ -120,6 +123,7 @@ class _ImportProgress extends StatelessWidget {
 class _LibraryBody extends HookConsumerWidget {
   final List<LocalBookModel> books;
   final LocalBookSource source;
+  final bool favoritesOnly;
   final TextEditingController filterController;
   final _LocalSort sort;
   final ValueChanged<_LocalSort> onSort;
@@ -128,6 +132,7 @@ class _LibraryBody extends HookConsumerWidget {
   const _LibraryBody({
     required this.books,
     required this.source,
+    required this.favoritesOnly,
     required this.filterController,
     required this.sort,
     required this.onSort,
@@ -150,7 +155,9 @@ class _LibraryBody extends HookConsumerWidget {
     if (books.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: _EmptyState(source: source, onAction: onAdd),
+        child: favoritesOnly
+            ? const _NoFavorites()
+            : _EmptyState(source: source, onAction: onAdd),
       );
     }
 
@@ -171,7 +178,10 @@ class _LibraryBody extends HookConsumerWidget {
     }
 
     final showContinue =
-        query.isEmpty && continueReading != null && continueReading.isNotEmpty;
+        !favoritesOnly &&
+        query.isEmpty &&
+        continueReading != null &&
+        continueReading.isNotEmpty;
 
     return SliverSafeArea(
       top: false,
@@ -306,6 +316,42 @@ class _EmptyState extends StatelessWidget {
               icon: Icon(isDevice ? KoverIcons.importFiles : KoverIcons.cloud),
               label: Text(isDevice ? l.importFiles : l.browseGoogleDrive),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoFavorites extends StatelessWidget {
+  const _NoFavorites();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: LayoutConstants.mediumEdgeInsets,
+        child: Column(
+          mainAxisSize: .min,
+          children: [
+            Icon(
+              KoverIcons.wantToRead,
+              size: LayoutConstants.largestIcon,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(height: LayoutConstants.mediumPadding),
+            Text(
+              l.noFavoritesTitle,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: .bold,
+              ),
+              textAlign: .center,
+            ),
+            const SizedBox(height: LayoutConstants.smallerPadding),
+            Text(l.noFavoritesDescription, textAlign: .center),
           ],
         ),
       ),

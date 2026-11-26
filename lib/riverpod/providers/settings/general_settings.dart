@@ -39,6 +39,9 @@ sealed class GeneralSettingsState with _$GeneralSettingsState {
 
     /// The last tab opened on the library page.
     @Default(null) ReadingSource? librarySource,
+
+    /// The last tab opened on the favorites page.
+    @Default(null) ReadingSource? favoritesSource,
   }) = _GeneralSettingsState;
 
   factory GeneralSettingsState.fromJson(Map<String, Object?> json) =>
@@ -107,6 +110,11 @@ class GeneralSettings extends _$GeneralSettings {
   Future<void> setLibrarySource(ReadingSource value) async {
     final current = await future;
     state = AsyncData(current.copyWith(librarySource: value));
+  }
+
+  Future<void> setFavoritesSource(ReadingSource value) async {
+    final current = await future;
+    state = AsyncData(current.copyWith(favoritesSource: value));
   }
 
   Future<void> resetNavbarDestinations() async {
