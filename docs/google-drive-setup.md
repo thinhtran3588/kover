@@ -43,7 +43,7 @@ through Google Play services and needs it as the server client ID.
 
 Create a client of type **Android**:
 
-- Package name: `com.rodonisi.kover`
+- Package name: `com.gemsinal.kover`
 - SHA-1 certificate fingerprint: one Android client per signing key, or add each key's
   SHA-1 (Google allows one SHA-1 per client, so create one client per key).
 
