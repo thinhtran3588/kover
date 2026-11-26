@@ -1466,6 +1466,14 @@
     "@sourceAll": {
         "description": "Filter chip that shows books from every source"
     },
+    "sourceNotConnected": "Not connected",
+    "@sourceNotConnected": {
+        "description": "Status of a reading source that has not been set up yet"
+    },
+    "kavitaConnectDescription": "Connect to your Kavita server to read its libraries.",
+    "@kavitaConnectDescription": {
+        "description": "Description shown where Kavita content would appear when no server is connected"
+    },
     "sourceKavita": "Kavita",
     "@sourceKavita": {
         "description": "Name of the Kavita server reading source"

@@ -1,18 +1,27 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
+import 'package:kover/models/enums/reading_source.dart';
 import 'package:kover/riverpod/providers/auth.dart';
 import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/credentials.dart';
-import 'package:kover/utils/constants/google_drive_config.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
-import 'package:kover/utils/safe_platform.dart';
+import 'package:kover/widgets/sources/source_connect_state.dart';
+import 'package:kover/widgets/sources/source_tile.dart';
 
 class LoginGuard extends ConsumerWidget {
   final Widget child;
 
-  const LoginGuard({super.key, required this.child});
+  /// Whether the not-connected state lists every source (onboarding) or only
+  /// Kavita (inside a source tab).
+  final bool showAllSources;
+
+  const LoginGuard({
+    super.key,
+    required this.child,
+    this.showAllSources = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,69 +31,34 @@ class LoginGuard extends ConsumerWidget {
     return switch (loginStatus) {
       .loggedIn => child,
       .loading => const Center(child: CircularProgressIndicator()),
-      .noCredentials => Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                KoverIcons.missingUser,
-                size: LayoutConstants.largerIcon,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: LayoutConstants.smallPadding),
-              Text(
-                l.notSignedIn,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: LayoutConstants.smallerPadding),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: LayoutConstants.mediumPadding,
-                ),
-                child: Text(
-                  l.chooseSourceDescription,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: LayoutConstants.smallPadding),
-              FilledButton.icon(
-                onPressed: () => const SettingsRoute().go(context),
-                icon: const Icon(
-                  KoverIcons.settings,
-                  size: LayoutConstants.smallIcon,
-                ),
-                label: Text(l.connectKavitaServer),
-              ),
-              if (SafePlatform.supportsLocalLibrary) ...[
-                const SizedBox(height: LayoutConstants.smallPadding),
-                FilledButton.tonalIcon(
-                  onPressed: () => const LocalLibraryRoute().go(context),
-                  icon: const Icon(
-                    KoverIcons.importFiles,
-                    size: LayoutConstants.smallIcon,
+      .noCredentials =>
+        showAllSources
+            ? Scaffold(
+                body: Center(
+                  child: SingleChildScrollView(
+                    padding: LayoutConstants.mediumEdgeInsets,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: Column(
+                        mainAxisSize: .min,
+                        spacing: LayoutConstants.smallPadding,
+                        children: [
+                          Text(
+                            l.notSignedIn,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: .bold),
+                            textAlign: .center,
+                          ),
+                          Text(l.chooseSourceDescription, textAlign: .center),
+                          for (final source in ReadingSource.values)
+                            SourceTile(source: source),
+                        ],
+                      ),
+                    ),
                   ),
-                  label: Text(l.importFiles),
                 ),
-              ],
-              if (GoogleDriveConfig.isSupportedPlatform) ...[
-                const SizedBox(height: LayoutConstants.smallPadding),
-                OutlinedButton.icon(
-                  onPressed: () => const GoogleDriveRoute().push(context),
-                  icon: const Icon(
-                    KoverIcons.cloud,
-                    size: LayoutConstants.smallIcon,
-                  ),
-                  label: Text(l.sourceGoogleDrive),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+              )
+            : const SourceConnectState(source: .kavita),
       .invalidCredentials => Scaffold(
         body: Center(
           child: Column(
@@ -115,7 +89,8 @@ class LoginGuard extends ConsumerWidget {
               ),
               const SizedBox(height: LayoutConstants.smallPadding),
               FilledButton.icon(
-                onPressed: () => const SettingsRoute().go(context),
+                onPressed: () =>
+                    const SettingsRoute(section: .kavita).go(context),
                 icon: Icon(
                   KoverIcons.settings,
                   size: LayoutConstants.smallIcon,
@@ -157,7 +132,8 @@ class LoginGuard extends ConsumerWidget {
               ),
               const SizedBox(height: LayoutConstants.smallPadding),
               FilledButton.icon(
-                onPressed: () => const SettingsRoute().go(context),
+                onPressed: () =>
+                    const SettingsRoute(section: .kavita).go(context),
                 icon: Icon(
                   KoverIcons.settings,
                   size: LayoutConstants.smallIcon,
@@ -212,7 +188,8 @@ class LoginGuard extends ConsumerWidget {
                   ),
                   const SizedBox(height: LayoutConstants.smallPadding),
                   FilledButton.icon(
-                    onPressed: () => const SettingsRoute().go(context),
+                    onPressed: () =>
+                        const SettingsRoute(section: .kavita).go(context),
                     icon: Icon(
                       KoverIcons.settings,
                       size: LayoutConstants.smallIcon,
