@@ -101,6 +101,27 @@ void main() {
       expect(await dao.watchRemoteIds().first, {'drive-1'});
     });
 
+    test('sets favorites and filters by them', () async {
+      final a = await insert(name: 'a.epub');
+      await insert(name: 'b.epub');
+      final dao = database.localBooksDao;
+
+      await dao.setFavorite(a, true);
+
+      expect(
+        (await dao.watchAll(favoritesOnly: true).first).map((b) => b.id),
+        [a],
+      );
+      expect(
+        await dao.watchAll(source: .googleDrive, favoritesOnly: true).first,
+        isEmpty,
+      );
+
+      await dao.setFavorite(a, false);
+
+      expect(await dao.watchAll(favoritesOnly: true).first, isEmpty);
+    });
+
     test('filters by source and deletes', () async {
       final device = await insert(name: 'a.epub');
       await insert(name: 'b.epub', remoteId: 'x');

@@ -106,9 +106,12 @@ class LocalLibraryRepository {
   static String _sanitize(String name) =>
       name.replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1f]'), '_');
 
-  Stream<List<LocalBookModel>> watchBooks({LocalBookSource? source}) {
+  Stream<List<LocalBookModel>> watchBooks({
+    LocalBookSource? source,
+    bool favoritesOnly = false,
+  }) {
     return _db.localBooksDao
-        .watchAll(source: source)
+        .watchAll(source: source, favoritesOnly: favoritesOnly)
         .map((rows) => rows.map(LocalBookModel.fromDatabaseModel).toList());
   }
 
@@ -165,6 +168,10 @@ class LocalLibraryRepository {
         lastRead: Value(null),
       ),
     );
+  }
+
+  Future<void> setFavorite(int id, bool value) {
+    return _db.localBooksDao.setFavorite(id, value);
   }
 
   /// Delete the book file, then its row.

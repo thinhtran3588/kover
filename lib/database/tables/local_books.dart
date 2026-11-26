@@ -24,5 +24,6 @@ class LocalBooks extends Table {
   IntColumn get pagesRead => integer().withDefault(const Constant(0))();
   TextColumn get bookScrollId => text().nullable()();
   DateTimeColumn get lastRead => dateTime().nullable()();
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
   DateTimeColumn get created => dateTime().withDefault(currentDateAndTime)();
 }

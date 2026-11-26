@@ -29,6 +29,7 @@ sealed class LocalBookModel with _$LocalBookModel {
     required int pagesRead,
     required String? bookScrollId,
     required DateTime? lastRead,
+    @Default(false) bool isFavorite,
     required DateTime created,
   }) = _LocalBookModel;
 
@@ -48,6 +49,7 @@ sealed class LocalBookModel with _$LocalBookModel {
       pagesRead: row.pagesRead,
       bookScrollId: row.bookScrollId,
       lastRead: row.lastRead,
+      isFavorite: row.isFavorite,
       created: row.created,
     );
   }

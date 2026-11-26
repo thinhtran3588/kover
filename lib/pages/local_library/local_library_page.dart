@@ -25,13 +25,20 @@ enum _LocalSort { lastRead, name, dateAdded }
 /// downloaded from Google Drive. Works without a Kavita server.
 class LocalBooksView extends HookConsumerWidget {
   final LocalBookSource source;
+  final bool favoritesOnly;
 
-  const LocalBooksView({super.key, required this.source});
+  const LocalBooksView({
+    super.key,
+    required this.source,
+    this.favoritesOnly = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final books = ref.watch(localBooksProvider(source: source));
+    final books = ref.watch(
+      localBooksProvider(source: source, favoritesOnly: favoritesOnly),
+    );
     final progress = ref.watch(localImportProvider);
     final filterController = useTextEditingController();
     final sort = useState(_LocalSort.lastRead);

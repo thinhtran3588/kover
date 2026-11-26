@@ -16,8 +16,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'local_library.g.dart';
 
 @riverpod
-Stream<List<LocalBookModel>> localBooks(Ref ref, {LocalBookSource? source}) {
-  return ref.watch(localLibraryRepositoryProvider).watchBooks(source: source);
+Stream<List<LocalBookModel>> localBooks(
+  Ref ref, {
+  LocalBookSource? source,
+  bool favoritesOnly = false,
+}) {
+  return ref
+      .watch(localLibraryRepositoryProvider)
+      .watchBooks(source: source, favoritesOnly: favoritesOnly);
 }
 
 @riverpod

@@ -36,6 +36,16 @@ class LocalBookCard extends ConsumerWidget {
       onMarkUnread: book.pagesRead > 0
           ? () => ref.read(localLibraryRepositoryProvider).markUnread(book.id)
           : null,
+      onAddWantToRead: book.isFavorite
+          ? null
+          : () => ref
+                .read(localLibraryRepositoryProvider)
+                .setFavorite(book.id, true),
+      onRemoveWantToRead: book.isFavorite
+          ? () => ref
+                .read(localLibraryRepositoryProvider)
+                .setFavorite(book.id, false)
+          : null,
       extraEntries: [
         MenuItem(
           label: Text(l.bookInfo),

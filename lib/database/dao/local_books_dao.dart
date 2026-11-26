@@ -33,12 +33,17 @@ class LocalBooksDao extends DatabaseAccessor<AppDatabase>
     pagesRead: row.read(localBooks.pagesRead)!,
     bookScrollId: row.read(localBooks.bookScrollId),
     lastRead: row.read(localBooks.lastRead),
+    isFavorite: row.read(localBooks.isFavorite)!,
     created: row.read(localBooks.created)!,
   );
 
   /// Watch all books, most recently read or added first. Optionally limited to
-  /// [source]. The returned books have no cover, see [getCover].
-  Stream<List<LocalBook>> watchAll({LocalBookSource? source}) {
+  /// [source] and, with [favoritesOnly], to favorites. The returned books have
+  /// no cover, see [getCover].
+  Stream<List<LocalBook>> watchAll({
+    LocalBookSource? source,
+    bool favoritesOnly = false,
+  }) {
     final query = _selectWithoutCover()
       ..orderBy([
         OrderingTerm.desc(
@@ -47,6 +52,9 @@ class LocalBooksDao extends DatabaseAccessor<AppDatabase>
       ]);
     if (source != null) {
       query.where(localBooks.source.equalsValue(source));
+    }
+    if (favoritesOnly) {
+      query.where(localBooks.isFavorite.equals(true));
     }
     return query.map(_toBook).watch();
   }
@@ -110,6 +118,10 @@ class LocalBooksDao extends DatabaseAccessor<AppDatabase>
         lastRead: Value(DateTime.now()),
       ),
     );
+  }
+
+  Future<void> setFavorite(int id, bool value) {
+    return updateBook(id, LocalBooksCompanion(isFavorite: Value(value)));
   }
 
   Future<void> deleteById(int id) {
