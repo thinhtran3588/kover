@@ -5,7 +5,8 @@
 # Signing comes from KOVER_KEYS_ENV (default ~/keys/kover-release.env), which
 # exports KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD and,
 # optionally, SENTRY_DSN. Extra arguments go to `flutter build apk`, e.g.
-# `--target-platform android-arm64` to build only that ABI.
+# `--target-platform android-arm64` to build only that ABI. Set UNIVERSAL=1 to
+# build a single APK with every ABI instead (Kover-<version>+<build>-universal.apk).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -37,17 +38,24 @@ if [[ -n "${SENTRY_DSN:-}" ]]; then
 fi
 
 out=build/app/outputs/flutter-apk
-rm -f "$out"/app-*-release.apk
+rm -f "$out"/app-*release.apk
 
-fvm flutter build apk --release --split-per-abi \
+split=(--split-per-abi)
+if [[ "${UNIVERSAL:-0}" == 1 ]]; then
+  split=()
+fi
+
+fvm flutter build apk --release ${split[@]+"${split[@]}"} \
   --build-name="$version" --build-number="$build" \
   ${defines[@]+"${defines[@]}"} "$@"
 
 sed -i '' -E "s/^version: .*/version: $version+$build/" pubspec.yaml
 
-for apk in "$out"/app-*-release.apk; do
+for apk in "$out"/app-*release.apk; do
   abi="${apk#"$out"/app-}"
-  abi="${abi%-release.apk}"
+  abi="${abi%release.apk}"
+  abi="${abi%-}"
+  abi="${abi:-universal}"
   target="$out/Kover-$version+$build-$abi.apk"
   mv "$apk" "$target"
   echo "Built $target"
