@@ -1465,5 +1465,37 @@
     "sourceAll": "All",
     "@sourceAll": {
         "description": "Filter chip that shows books from every source"
+    },
+    "sourceKavita": "Kavita",
+    "@sourceKavita": {
+        "description": "Name of the Kavita server reading source"
+    },
+    "sourceNotAvailable": "Not available on this platform",
+    "@sourceNotAvailable": {
+        "description": "Shown when a reading source cannot be used on this platform"
+    },
+    "storage": "Storage",
+    "@storage": {
+        "description": "Title of the settings card about on-device storage"
+    },
+    "googleAccount": "Google account",
+    "@googleAccount": {
+        "description": "Title of the settings card about the Google Drive account"
+    },
+    "deviceStorageSummary": "{count, plural, =1{1 book} other{{count} books}} · {size}",
+    "@deviceStorageSummary": {
+        "description": "Summary of the books imported on this device",
+        "placeholders": {
+            "count": {
+                "description": "Number of books",
+                "type": "int",
+                "example": "3"
+            },
+            "size": {
+                "description": "Total size of the books",
+                "type": "String",
+                "example": "12.3 MB"
+            }
+        }
     }
 }

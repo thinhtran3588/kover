@@ -24,6 +24,7 @@ import 'package:kover/pages/series_detail_page/volume_detail_page/volume_detail_
 import 'package:kover/pages/series_detail_page/volumes_page/volumes_page.dart';
 import 'package:kover/pages/settings/local_logs/local_logs_page.dart';
 import 'package:kover/pages/settings/settings_page.dart';
+import 'package:kover/pages/settings/settings_section.dart';
 import 'package:kover/pages/want_to_read_page/want_to_read_page.dart';
 import 'package:kover/widgets/util/navigator_container.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -454,11 +455,13 @@ class ChapterBookmarksRoute extends GoRouteData with $ChapterBookmarksRoute {
 }
 
 class SettingsRoute extends GoRouteData with $SettingsRoute {
-  const SettingsRoute();
+  final SettingsSection? section;
+
+  const SettingsRoute({this.section});
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const SettingsPage();
+      SettingsPage(section: section ?? .general);
 }
 
 class LocalLogsRoute extends GoRouteData with $LocalLogsRoute {
