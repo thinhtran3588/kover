@@ -11,6 +11,9 @@ class SeriesListPage extends StatelessWidget {
   final AsyncValue<List<SeriesModel>> series;
   final Widget? sortMenu;
 
+  /// Whether to show the large app bar, see [EntitiesListPage.showAppBar].
+  final bool showAppBar;
+
   /// Hides the read action button on the grid cards.
   final bool hideAction;
 
@@ -26,6 +29,7 @@ class SeriesListPage extends StatelessWidget {
     required this.controller,
     required this.series,
     this.sortMenu,
+    this.showAppBar = true,
     this.hideAction = false,
     this.onSeriesTap,
     this.onViewDetails,
@@ -38,6 +42,7 @@ class SeriesListPage extends StatelessWidget {
       filterController: controller,
       items: series,
       sortMenu: sortMenu,
+      showAppBar: showAppBar,
       gridBuilder: (context, series) => SeriesCard(
         key: ValueKey(series.id),
         seriesId: series.id,

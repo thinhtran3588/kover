@@ -17,6 +17,10 @@ class EntitiesListPage<T> extends HookWidget {
   final Widget Function(BuildContext context, T item) gridBuilder;
   final Widget Function(BuildContext context, T item) listBuilder;
 
+  /// Whether to show the large app bar with [title]. When false the list
+  /// toggle and [sortMenu] move next to the filter field.
+  final bool showAppBar;
+
   const new({
     super.key,
     required this.title,
@@ -25,6 +29,7 @@ class EntitiesListPage<T> extends HookWidget {
     required this.gridBuilder,
     required this.listBuilder,
     this.sortMenu,
+    this.showAppBar = true,
   });
 
   @override
@@ -33,6 +38,7 @@ class EntitiesListPage<T> extends HookWidget {
       title: title,
       filterController: filterController,
       sortMenu: sortMenu,
+      showAppBar: showAppBar,
       sliver: AsyncSliver(
         asyncValue: items,
         data: (data) {
@@ -52,36 +58,38 @@ class _EntitiesListPage extends HookWidget {
   final Widget? sortMenu;
   final TextEditingController filterController;
   final Widget sliver;
+  final bool showAppBar;
 
   const new({
     required this.title,
     required this.filterController,
     required this.sliver,
+    required this.showAppBar,
     this.sortMenu,
   });
 
   @override
   Widget build(BuildContext context) {
     final isGrid = useState(true);
+    final toggle = IconButton(
+      icon: Icon(isGrid.value ? KoverIcons.list : KoverIcons.grid),
+      onPressed: () {
+        isGrid.value = !isGrid.value;
+      },
+    );
+    final filter = FilterInputField(controller: filterController);
 
     return CustomScrollView(
       keyboardDismissBehavior: .onDrag,
       slivers: [
-        SliverAppBar.large(
-          title: Text(title),
-          actionsPadding: const EdgeInsets.symmetric(
-            horizontal: LayoutConstants.smallPadding,
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(isGrid.value ? KoverIcons.list : KoverIcons.grid),
-              onPressed: () {
-                isGrid.value = !isGrid.value;
-              },
+        if (showAppBar)
+          SliverAppBar.large(
+            title: Text(title),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: LayoutConstants.smallPadding,
             ),
-            ?sortMenu,
-          ],
-        ),
+            actions: [toggle, ?sortMenu],
+          ),
         SliverSafeArea(
           top: false,
           bottom: false,
@@ -92,7 +100,15 @@ class _EntitiesListPage extends HookWidget {
                   horizontal: LayoutConstants.mediumPadding,
                 ),
                 sliver: SliverToBoxAdapter(
-                  child: FilterInputField(controller: filterController),
+                  child: showAppBar
+                      ? filter
+                      : Row(
+                          children: [
+                            Expanded(child: filter),
+                            toggle,
+                            ?sortMenu,
+                          ],
+                        ),
                 ),
               ),
               EntitiesPageScope(isGrid: isGrid.value, child: sliver),

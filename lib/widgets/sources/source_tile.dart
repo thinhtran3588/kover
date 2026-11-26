@@ -19,9 +19,9 @@ void openSourceSetup(BuildContext context, ReadingSource source) {
     case .kavita:
       const SettingsRoute(section: .kavita).go(context);
     case .googleDrive:
-      const GoogleDriveRoute().push(context);
+      const LibraryRoute(source: .googleDrive).go(context);
     case .device:
-      const LocalLibraryRoute().go(context);
+      const LibraryRoute(source: .device).go(context);
   }
 }
 

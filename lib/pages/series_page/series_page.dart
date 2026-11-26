@@ -81,12 +81,16 @@ class SeriesPage extends HookConsumerWidget {
   final int? libraryId;
   final int? collectionId;
 
+  /// Whether to show the large app bar. Disabled when embedded in tabs.
+  final bool showAppBar;
+
   const SeriesPage({
     super.key,
     required this.title,
     this.subtitle,
     this.libraryId,
     this.collectionId,
+    this.showAppBar = true,
   });
 
   @override
@@ -116,6 +120,7 @@ class SeriesPage extends HookConsumerWidget {
       extendBodyBehindAppBar: true,
       body: SeriesListPage(
         title: title,
+        showAppBar: showAppBar,
         controller: controller,
         sortMenu: UnorderedSortMenu(
           sortDirection: sortDirection.value,

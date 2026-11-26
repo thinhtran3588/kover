@@ -41,10 +41,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          localBooksProvider().overrideWith((_) => Stream.value(books)),
-          localBooksProvider(source: .googleDrive).overrideWith(
-            (_) => Stream.value(const []),
-          ),
+          localBooksProvider(
+            source: .device,
+          ).overrideWith((_) => Stream.value(books)),
           localContinueReadingProvider.overrideWith(
             (_) => Stream.value(const []),
           ),
@@ -59,7 +58,7 @@ void main() {
             GlobalMaterialLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: LocalLibraryPage(),
+          home: LocalBooksView(source: .device),
         ),
       ),
     );
@@ -71,7 +70,7 @@ void main() {
     await pumpPage(tester, const []);
 
     expect(find.text('No books on this device yet'), findsOneWidget);
-    expect(find.text('Import files'), findsOneWidget);
+    expect(find.text('Import files'), findsNWidgets(2));
     expect(find.byType(LocalBookCard), findsNothing);
   });
 

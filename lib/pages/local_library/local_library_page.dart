@@ -10,7 +10,6 @@ import 'package:kover/pages/local_library/local_book_card.dart';
 import 'package:kover/riverpod/managers/local_import_manager.dart';
 import 'package:kover/riverpod/providers/local_library.dart';
 import 'package:kover/riverpod/providers/router.dart';
-import 'package:kover/utils/constants/google_drive_config.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/widgets/context_menu/context_menu_button.dart';
@@ -22,85 +21,51 @@ import 'package:material_ui/material_ui.dart';
 
 enum _LocalSort { lastRead, name, dateAdded }
 
-/// The books imported on this device. Works without a Kavita server.
-class LocalLibraryPage extends HookConsumerWidget {
-  const LocalLibraryPage({super.key});
+/// The books of one [source]: imported files on this device, or books
+/// downloaded from Google Drive. Works without a Kavita server.
+class LocalBooksView extends HookConsumerWidget {
+  final LocalBookSource source;
+
+  const LocalBooksView({super.key, required this.source});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final hasDriveBooks =
-        ref.watch(localBooksProvider(source: .googleDrive)).value?.isNotEmpty ??
-        false;
-    final selectedSource = useState<LocalBookSource?>(null);
-    // The filter only exists while there are Drive books.
-    final source = hasDriveBooks ? selectedSource.value : null;
     final books = ref.watch(localBooksProvider(source: source));
     final progress = ref.watch(localImportProvider);
     final filterController = useTextEditingController();
     final sort = useState(_LocalSort.lastRead);
 
+    final isDevice = source == LocalBookSource.device;
     Future<void> add() async {
-      final action = await showAddBooksSheet(context);
-      if (action == null || !context.mounted) return;
-
-      switch (action) {
-        case .importFiles:
-          await importBooks(context, ref);
-        case .googleDrive:
-          await const GoogleDriveRoute().push<void>(context);
+      if (isDevice) {
+        await importBooks(context, ref);
+      } else {
+        await const GoogleDriveRoute().push<void>(context);
       }
     }
 
     return Scaffold(
       extendBody: true,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: progress == null ? add : null,
-        icon: const Icon(KoverIcons.importFiles),
-        label: Text(l.addBooks),
+        onPressed: isDevice && progress != null ? null : add,
+        icon: Icon(isDevice ? KoverIcons.importFiles : KoverIcons.cloud),
+        label: Text(isDevice ? l.importFiles : l.browseGoogleDrive),
       ),
       body: CustomScrollView(
         keyboardDismissBehavior: .onDrag,
         slivers: [
-          SliverAppBar.large(
-            title: Text(l.onThisDevice),
-            actionsPadding: const .symmetric(
-              horizontal: LayoutConstants.smallPadding,
-            ),
-            actions: [
-              ContextMenuButton(
-                icon: const Icon(KoverIcons.sort),
-                menu: ContextMenu(
-                  entries: [
-                    MenuHeader(text: l.sortBy),
-                    for (final (label, option) in [
-                      (l.lastRead, _LocalSort.lastRead),
-                      (l.name, _LocalSort.name),
-                      (l.dateAdded, _LocalSort.dateAdded),
-                    ])
-                      MenuItem(
-                        label: Text(label),
-                        icon: sort.value == option
-                            ? const Icon(KoverIcons.check)
-                            : null,
-                        onSelected: (_) => sort.value = option,
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(child: _ImportProgress(progress: progress)),
+          if (isDevice)
+            SliverToBoxAdapter(child: _ImportProgress(progress: progress)),
           AsyncSliver(
             asyncValue: books,
             data: (books) => _LibraryBody(
               books: books,
+              source: source,
               filterController: filterController,
               sort: sort.value,
+              onSort: (value) => sort.value = value,
               onAdd: add,
-              source: source,
-              showSourceFilter: hasDriveBooks,
-              onSource: (value) => selectedSource.value = value,
             ),
           ),
           const SliverBottomPadding(),
@@ -147,21 +112,19 @@ class _ImportProgress extends StatelessWidget {
 
 class _LibraryBody extends HookConsumerWidget {
   final List<LocalBookModel> books;
+  final LocalBookSource source;
   final TextEditingController filterController;
   final _LocalSort sort;
+  final ValueChanged<_LocalSort> onSort;
   final VoidCallback onAdd;
-  final LocalBookSource? source;
-  final bool showSourceFilter;
-  final ValueChanged<LocalBookSource?> onSource;
 
   const _LibraryBody({
     required this.books,
+    required this.source,
     required this.filterController,
     required this.sort,
+    required this.onSort,
     required this.onAdd,
-    required this.source,
-    required this.showSourceFilter,
-    required this.onSource,
   });
 
   @override
@@ -171,17 +134,16 @@ class _LibraryBody extends HookConsumerWidget {
     final query = useValueListenable(filterController).text
         .trim()
         .toLowerCase();
-    final continueReading = ref.watch(localContinueReadingProvider).value;
+    final continueReading = ref
+        .watch(localContinueReadingProvider)
+        .value
+        ?.where((book) => book.source == source)
+        .toList();
 
     if (books.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: _EmptyState(
-          onImport: onAdd,
-          onDrive: GoogleDriveConfig.isSupportedPlatform
-              ? () => const GoogleDriveRoute().push<void>(context)
-              : null,
-        ),
+        child: _EmptyState(source: source, onAction: onAdd),
       );
     }
 
@@ -214,32 +176,35 @@ class _LibraryBody extends HookConsumerWidget {
               horizontal: LayoutConstants.mediumPadding,
             ),
             sliver: SliverToBoxAdapter(
-              child: FilterInputField(controller: filterController),
-            ),
-          ),
-          if (showSourceFilter)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const .symmetric(
-                  horizontal: LayoutConstants.mediumPadding,
-                ),
-                child: Wrap(
-                  spacing: LayoutConstants.smallPadding,
-                  children: [
-                    for (final (label, value) in [
-                      (l.sourceAll, null),
-                      (l.sourceDevice, LocalBookSource.device),
-                      (l.sourceGoogleDrive, LocalBookSource.googleDrive),
-                    ])
-                      ChoiceChip(
-                        label: Text(label),
-                        selected: source == value,
-                        onSelected: (_) => onSource(value),
-                      ),
-                  ],
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FilterInputField(controller: filterController),
+                  ),
+                  ContextMenuButton(
+                    icon: const Icon(KoverIcons.sort),
+                    menu: ContextMenu(
+                      entries: [
+                        MenuHeader(text: l.sortBy),
+                        for (final (label, option) in [
+                          (l.lastRead, _LocalSort.lastRead),
+                          (l.name, _LocalSort.name),
+                          (l.dateAdded, _LocalSort.dateAdded),
+                        ])
+                          MenuItem(
+                            label: Text(label),
+                            icon: sort == option
+                                ? const Icon(KoverIcons.check)
+                                : null,
+                            onSelected: (_) => onSort(option),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
           if (showContinue) ...[
             HomeSection.localBooks(
               title: l.continueReading,
@@ -291,15 +256,16 @@ class _LibraryBody extends HookConsumerWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final VoidCallback onImport;
-  final VoidCallback? onDrive;
+  final LocalBookSource source;
+  final VoidCallback onAction;
 
-  const _EmptyState({required this.onImport, required this.onDrive});
+  const _EmptyState({required this.source, required this.onAction});
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final isDevice = source == LocalBookSource.device;
 
     return Center(
       child: Padding(
@@ -308,13 +274,13 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: .min,
           children: [
             Icon(
-              KoverIcons.device,
+              isDevice ? KoverIcons.device : KoverIcons.cloud,
               size: LayoutConstants.largestIcon,
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: LayoutConstants.mediumPadding),
             Text(
-              l.localLibraryEmptyTitle,
+              isDevice ? l.localLibraryEmptyTitle : l.driveLibraryEmptyTitle,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: .bold,
               ),
@@ -322,23 +288,17 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: LayoutConstants.smallerPadding),
             Text(
-              l.localLibraryEmptyDescription,
+              isDevice
+                  ? l.localLibraryEmptyDescription
+                  : l.driveLibraryEmptyDescription,
               textAlign: .center,
             ),
             const SizedBox(height: LayoutConstants.mediumPadding),
             FilledButton.icon(
-              onPressed: onImport,
-              icon: const Icon(KoverIcons.importFiles),
-              label: Text(l.importFiles),
+              onPressed: onAction,
+              icon: Icon(isDevice ? KoverIcons.importFiles : KoverIcons.cloud),
+              label: Text(isDevice ? l.importFiles : l.browseGoogleDrive),
             ),
-            if (onDrive != null) ...[
-              const SizedBox(height: LayoutConstants.smallPadding),
-              OutlinedButton.icon(
-                onPressed: onDrive,
-                icon: const Icon(KoverIcons.cloud),
-                label: Text(l.browseGoogleDrive),
-              ),
-            ],
           ],
         ),
       ),

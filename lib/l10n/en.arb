@@ -1439,7 +1439,7 @@
     "@driveEmptyFolder": {
         "description": "Shown when a Google Drive folder has no folders or supported books"
     },
-    "driveOffline": "You're offline. Downloaded books are still on This device.",
+    "driveOffline": "You're offline. Downloaded books are still in the Google Drive tab.",
     "@driveOffline": {
         "description": "Shown when Google Drive cannot be reached"
     },
@@ -1465,6 +1465,18 @@
     "sourceAll": "All",
     "@sourceAll": {
         "description": "Filter chip that shows books from every source"
+    },
+    "library": "Library",
+    "@library": {
+        "description": "Label of the library destination and page title"
+    },
+    "driveLibraryEmptyTitle": "No downloaded books yet",
+    "@driveLibraryEmptyTitle": {
+        "description": "Title of the empty Google Drive library tab"
+    },
+    "driveLibraryEmptyDescription": "Browse Google Drive and download books to read them offline.",
+    "@driveLibraryEmptyDescription": {
+        "description": "Description of the empty Google Drive library tab"
     },
     "sourceNotConnected": "Not connected",
     "@sourceNotConnected": {

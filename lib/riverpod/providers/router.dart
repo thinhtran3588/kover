@@ -3,9 +3,10 @@ import 'package:kover/pages/recently_updated_page/recently_updated_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kover/pages/download_queue/download_queue_page.dart';
+import 'package:kover/models/enums/reading_source.dart';
 import 'package:kover/pages/home/home_page.dart';
 import 'package:kover/pages/google_drive/google_drive_page.dart';
-import 'package:kover/pages/local_library/local_library_page.dart';
+import 'package:kover/pages/library/library_page.dart';
 import 'package:kover/pages/menu_page/menu_page.dart';
 import 'package:kover/pages/on_deck_page/on_deck_page.dart';
 import 'package:kover/pages/collections_page/collections_page.dart';
@@ -133,9 +134,9 @@ GoRouter router(Ref ref) {
         TypedGoRoute<BookmarksRoute>(path: '/bookmarks'),
       ],
     ),
-    TypedStatefulShellBranch<LocalLibraryBranch>(
+    TypedStatefulShellBranch<LibraryBranch>(
       routes: [
-        TypedGoRoute<LocalLibraryRoute>(
+        TypedGoRoute<LibraryRoute>(
           path: '/local',
           routes: [
             TypedGoRoute<GoogleDriveRoute>(
@@ -205,8 +206,8 @@ class BookmarksBranch extends StatefulShellBranchData {
   const BookmarksBranch();
 }
 
-class LocalLibraryBranch extends StatefulShellBranchData {
-  const LocalLibraryBranch();
+class LibraryBranch extends StatefulShellBranchData {
+  const LibraryBranch();
 }
 
 class MenuBranch extends StatefulShellBranchData {
@@ -228,12 +229,14 @@ class WantToReadRoute extends GoRouteData with $WantToReadRoute {
       const WantToReadPage();
 }
 
-class LocalLibraryRoute extends GoRouteData with $LocalLibraryRoute {
-  const LocalLibraryRoute();
+class LibraryRoute extends GoRouteData with $LibraryRoute {
+  final ReadingSource? source;
+
+  const LibraryRoute({this.source});
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const LocalLibraryPage();
+      LibraryPage(source: source);
 }
 
 class GoogleDriveRoute extends GoRouteData with $GoogleDriveRoute {

@@ -25,7 +25,9 @@ class SliverHiddenDestinations extends ConsumerWidget {
               .where(
                 (destination) =>
                     destination.isSupported &&
-                    (kavitaAvailable || destination == .localLibrary) &&
+                    (kavitaAvailable ||
+                        destination == .localLibrary ||
+                        destination == .wantToRead) &&
                     !state.navbarDestinations.contains(destination),
               )
               .toSet(),

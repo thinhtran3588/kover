@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/experimental/persist.dart';
+import 'package:kover/models/enums/reading_source.dart';
 import 'package:kover/riverpod/repository/storage_repository.dart';
 import 'package:kover/utils/locale_tag.dart';
 import 'package:kover/utils/logging.dart';
@@ -35,6 +36,9 @@ sealed class GeneralSettingsState with _$GeneralSettingsState {
     @Default(null) TextDirection? textDirection,
     @Default(<NavbarDestinations>[.home, .localLibrary, .wantToRead])
     List<NavbarDestinations> navbarDestinations,
+
+    /// The last tab opened on the library page.
+    @Default(null) ReadingSource? librarySource,
   }) = _GeneralSettingsState;
 
   factory GeneralSettingsState.fromJson(Map<String, Object?> json) =>
@@ -98,6 +102,11 @@ class GeneralSettings extends _$GeneralSettings {
       attributes: {'value': value.map((e) => e.name)},
     );
     state = AsyncData(current.copyWith(navbarDestinations: value));
+  }
+
+  Future<void> setLibrarySource(ReadingSource value) async {
+    final current = await future;
+    state = AsyncData(current.copyWith(librarySource: value));
   }
 
   Future<void> resetNavbarDestinations() async {
