@@ -1,1 +1,1 @@
-enum SettingsSection { general, kavita, googleDrive, device }
+enum SettingsSection { general, kavita, googleDrive }

@@ -11,6 +11,7 @@ import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/widgets/cards/cover_card.dart';
 import 'package:kover/widgets/cards/cover_image.dart';
 import 'package:kover/widgets/context_menu/actions_menu.dart';
+import 'package:kover/widgets/lists/cover_list_entry.dart';
 import 'package:kover/widgets/util/async_value.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -23,7 +24,10 @@ void openLocalBook(BuildContext context, int id) {
 class LocalBookCard extends ConsumerWidget {
   final LocalBookModel book;
 
-  const LocalBookCard({super.key, required this.book});
+  /// Shows a compact list entry instead of a grid card.
+  final bool asList;
+
+  const LocalBookCard({super.key, required this.book, this.asList = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,40 +62,53 @@ class LocalBookCard extends ConsumerWidget {
           onSelected: (_) => _confirmDelete(context, ref),
         ),
       ],
-      child: CoverCard(
-        title: book.title,
-        icon: Icon(
-          switch (book.format) {
-            .epub => KoverIcons.epubFormat,
-            .archive => KoverIcons.archiveFormat,
-            .image => KoverIcons.imageFormat,
-            .pdf => KoverIcons.pdfFormat,
-            _ => KoverIcons.unknownFormat,
-          },
-          size: LayoutConstants.smallIcon,
-        ),
-        progress: book.progress,
-        coverImage: Async(
-          asyncValue: ref.watch(localBookCoverProvider(book.id)),
-          data: (image) => PlaceholderCoverImage(image: image),
-          loading: () => const LoadingCover(),
-        ),
-        downloadStatusIcon: book.source == .googleDrive
-            ? const Card(
-                child: Padding(
-                  padding: LayoutConstants.smallEdgeInsets,
-                  child: Icon(
-                    KoverIcons.cloud,
-                    size: LayoutConstants.smallIcon,
-                  ),
-                ),
-              )
-            : null,
-        actionLabel: book.pagesRead > 0 ? l.continueReading : l.read,
-        actionDisabled: false,
-        onTap: () => openLocalBook(context, book.id),
-        onActionTap: () => openLocalBook(context, book.id),
-      ),
+      child: asList
+          ? CoverListEntry(
+              title: book.title,
+              subtitle: book.author,
+              progress: book.progress,
+              cover: Async(
+                asyncValue: ref.watch(localBookCoverProvider(book.id)),
+                data: (image) => PlaceholderCoverImage(image: image),
+                loading: () => const LoadingCover(),
+              ),
+              trailing: const Icon(KoverIcons.chevronRight),
+              onTap: () => openLocalBook(context, book.id),
+            )
+          : CoverCard(
+              title: book.title,
+              icon: Icon(
+                switch (book.format) {
+                  .epub => KoverIcons.epubFormat,
+                  .archive => KoverIcons.archiveFormat,
+                  .image => KoverIcons.imageFormat,
+                  .pdf => KoverIcons.pdfFormat,
+                  _ => KoverIcons.unknownFormat,
+                },
+                size: LayoutConstants.smallIcon,
+              ),
+              progress: book.progress,
+              coverImage: Async(
+                asyncValue: ref.watch(localBookCoverProvider(book.id)),
+                data: (image) => PlaceholderCoverImage(image: image),
+                loading: () => const LoadingCover(),
+              ),
+              downloadStatusIcon: book.source == .googleDrive
+                  ? const Card(
+                      child: Padding(
+                        padding: LayoutConstants.smallEdgeInsets,
+                        child: Icon(
+                          KoverIcons.cloud,
+                          size: LayoutConstants.smallIcon,
+                        ),
+                      ),
+                    )
+                  : null,
+              actionLabel: book.pagesRead > 0 ? l.continueReading : l.read,
+              actionDisabled: false,
+              onTap: () => openLocalBook(context, book.id),
+              onActionTap: () => openLocalBook(context, book.id),
+            ),
     );
   }
 

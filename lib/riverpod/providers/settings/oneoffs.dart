@@ -14,6 +14,7 @@ sealed class OneOffsState with _$OneOffsState {
 
   const factory OneOffsState({
     @Default(false) bool monitoringOptOutPopupShown,
+    @Default(false) bool onboardingShown,
   }) = _OneOffsState;
 
   factory OneOffsState.fromJson(Map<String, Object?> json) =>
@@ -36,5 +37,11 @@ class OneOffs extends _$OneOffs {
     final current = await future;
     state = AsyncData(current.copyWith(monitoringOptOutPopupShown: true));
     log.info('set monitoring opt-out popup shown');
+  }
+
+  Future<void> setOnboardingShown() async {
+    final current = await future;
+    state = AsyncData(current.copyWith(onboardingShown: true));
+    log.info('set onboarding shown');
   }
 }

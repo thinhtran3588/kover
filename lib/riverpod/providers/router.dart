@@ -5,10 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kover/pages/download_queue/download_queue_page.dart';
 import 'package:kover/models/enums/reading_source.dart';
-import 'package:kover/pages/home/home_page.dart';
 import 'package:kover/pages/google_drive/google_drive_page.dart';
 import 'package:kover/pages/library/library_page.dart';
-import 'package:kover/pages/menu_page/menu_page.dart';
+import 'package:kover/pages/libraries_page/libraries_page.dart';
 import 'package:kover/pages/on_deck_page/on_deck_page.dart';
 import 'package:kover/pages/collections_page/collections_page.dart';
 import 'package:kover/pages/reading_list_details_page/reading_lists_details_page.dart';
@@ -47,9 +46,9 @@ GoRouter router(Ref ref) {
 
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
-    TypedStatefulShellBranch<HomeBranch>(
+    TypedStatefulShellBranch<LibraryBranch>(
       routes: [
-        TypedGoRoute<HomeRoute>(
+        TypedGoRoute<LibraryRoute>(
           path: '/',
           routes: [
             TypedGoRoute<SeriesDetailRoute>(
@@ -91,54 +90,25 @@ GoRouter router(Ref ref) {
               path: 'smart-filters/:smartFilterId',
             ),
             TypedGoRoute<SeriesRoute>(path: 'library/:libraryId'),
-          ],
-        ),
-      ],
-    ),
-    TypedStatefulShellBranch<AllSeriesBranch>(
-      routes: [
-        TypedGoRoute<AllSeriesRoute>(path: '/all-series'),
-      ],
-    ),
-    TypedStatefulShellBranch<WantToReadBranch>(
-      routes: [
-        TypedGoRoute<FavoritesRoute>(path: '/favorites'),
-      ],
-    ),
-    TypedStatefulShellBranch<CollectionsBranch>(
-      routes: [
-        TypedGoRoute<CollectionsRoute>(
-          path: '/collections',
-          routes: [
-            TypedGoRoute<CollectionSeriesRoute>(
-              path: ':collectionId',
+            TypedGoRoute<LibrariesRoute>(path: 'libraries'),
+            TypedGoRoute<CollectionsRoute>(
+              path: 'collections',
+              routes: [
+                TypedGoRoute<CollectionSeriesRoute>(
+                  path: ':collectionId',
+                ),
+              ],
             ),
-          ],
-        ),
-      ],
-    ),
-    TypedStatefulShellBranch<ReadingListsBranch>(
-      routes: [
-        TypedGoRoute<ReadingListsRoute>(
-          path: '/reading-lists',
-          routes: [
-            TypedGoRoute<ReadingListDetailsRoute>(
-              path: ':readingListId',
+            TypedGoRoute<ReadingListsRoute>(
+              path: 'reading-lists',
+              routes: [
+                TypedGoRoute<ReadingListDetailsRoute>(
+                  path: ':readingListId',
+                ),
+              ],
             ),
-          ],
-        ),
-      ],
-    ),
-    TypedStatefulShellBranch<BookmarksBranch>(
-      routes: [
-        TypedGoRoute<BookmarksRoute>(path: '/bookmarks'),
-      ],
-    ),
-    TypedStatefulShellBranch<LibraryBranch>(
-      routes: [
-        TypedGoRoute<LibraryRoute>(
-          path: '/local',
-          routes: [
+            TypedGoRoute<BookmarksRoute>(path: 'bookmarks'),
+            TypedGoRoute<DownloadQueueRoute>(path: 'download-queue'),
             TypedGoRoute<GoogleDriveRoute>(
               path: 'drive',
               routes: [
@@ -149,20 +119,17 @@ GoRouter router(Ref ref) {
         ),
       ],
     ),
-    TypedStatefulShellBranch<MenuBranch>(
+    TypedStatefulShellBranch<WantToReadBranch>(
       routes: [
-        TypedGoRoute<MenuRoute>(
-          path: '/menu',
+        TypedGoRoute<FavoritesRoute>(path: '/favorites'),
+      ],
+    ),
+    TypedStatefulShellBranch<SettingsBranch>(
+      routes: [
+        TypedGoRoute<SettingsRoute>(
+          path: '/settings',
           routes: [
-            TypedGoRoute<DownloadQueueRoute>(
-              path: 'download-queue',
-            ),
-            TypedGoRoute<SettingsRoute>(
-              path: 'settings',
-              routes: [
-                TypedGoRoute<LocalLogsRoute>(path: 'local-logs'),
-              ],
-            ),
+            TypedGoRoute<LocalLogsRoute>(path: 'local-logs'),
           ],
         ),
       ],
@@ -182,43 +149,16 @@ class AppShellRoute extends StatefulShellRouteData {
   }
 }
 
-class HomeBranch extends StatefulShellBranchData {
-  const HomeBranch();
-}
-
 class WantToReadBranch extends StatefulShellBranchData {
   const WantToReadBranch();
-}
-
-class AllSeriesBranch extends StatefulShellBranchData {
-  const AllSeriesBranch();
-}
-
-class CollectionsBranch extends StatefulShellBranchData {
-  const CollectionsBranch();
-}
-
-class ReadingListsBranch extends StatefulShellBranchData {
-  const ReadingListsBranch();
-}
-
-class BookmarksBranch extends StatefulShellBranchData {
-  const BookmarksBranch();
 }
 
 class LibraryBranch extends StatefulShellBranchData {
   const LibraryBranch();
 }
 
-class MenuBranch extends StatefulShellBranchData {
-  const MenuBranch();
-}
-
-class HomeRoute extends GoRouteData with $HomeRoute {
-  const HomeRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const HomePage();
+class SettingsBranch extends StatefulShellBranchData {
+  const SettingsBranch();
 }
 
 class FavoritesRoute extends GoRouteData with $FavoritesRoute {
@@ -260,19 +200,12 @@ class GoogleDriveFolderRoute extends GoRouteData with $GoogleDriveFolderRoute {
       DriveBrowserPage(folderId: folderId, title: name);
 }
 
-class MenuRoute extends GoRouteData with $MenuRoute {
-  const MenuRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const MenuPage();
-}
-
-class AllSeriesRoute extends GoRouteData with $AllSeriesRoute {
-  const AllSeriesRoute();
+class LibrariesRoute extends GoRouteData with $LibrariesRoute {
+  const LibrariesRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      const AllSeriesPage();
+      const LibrariesPage();
 }
 
 class BookmarksRoute extends GoRouteData with $BookmarksRoute {
@@ -465,8 +398,10 @@ class SettingsRoute extends GoRouteData with $SettingsRoute {
   const SettingsRoute({this.section});
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      SettingsPage(section: section ?? .general);
+  Widget build(BuildContext context, GoRouterState state) => SettingsPage(
+    key: ValueKey(section),
+    section: section ?? .general,
+  );
 }
 
 class LocalLogsRoute extends GoRouteData with $LocalLogsRoute {

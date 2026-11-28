@@ -9,7 +9,11 @@ import 'package:kover/riverpod/providers/local_library.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  Future<void> pumpPage(WidgetTester tester, SettingsSection section) async {
+  Future<void> pumpPage(
+    WidgetTester tester,
+    SettingsSection section, {
+    Key? key,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -24,7 +28,7 @@ void main() {
             GlobalMaterialLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsPage(section: section),
+          home: SettingsPage(key: key, section: section),
         ),
       ),
     );
@@ -32,26 +36,35 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('shows the four source tabs', (tester) async {
-    await pumpPage(tester, .device);
+  testWidgets('shows the general and source tabs', (tester) async {
+    await pumpPage(tester, .googleDrive);
 
     expect(find.text('General'), findsOneWidget);
     expect(find.text('Kavita'), findsOneWidget);
     expect(find.text('Google Drive'), findsOneWidget);
-    expect(find.text('On this device'), findsWidgets);
+    expect(find.text('On this device'), findsNothing);
   });
 
   testWidgets('opens the requested section', (tester) async {
-    await pumpPage(tester, .device);
+    await pumpPage(tester, .googleDrive);
 
-    expect(find.text('Import files'), findsOneWidget);
+    expect(find.text('Sign in with Google'), findsOneWidget);
+  });
+
+  testWidgets('a keyed section change opens that tab', (tester) async {
+    await pumpPage(tester, .kavita, key: const ValueKey('kavita'));
     expect(find.text('Sign in with Google'), findsNothing);
+
+    await pumpPage(tester, .googleDrive, key: const ValueKey('googleDrive'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in with Google'), findsOneWidget);
   });
 
   testWidgets('switching to the Google Drive tab shows the account', (
     tester,
   ) async {
-    await pumpPage(tester, .device);
+    await pumpPage(tester, .kavita);
 
     await tester.tap(find.text('Google Drive'));
     await tester.pumpAndSettle();
