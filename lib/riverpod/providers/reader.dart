@@ -4,6 +4,7 @@ import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/connectivity.dart';
 import 'package:kover/riverpod/repository/download_repository.dart';
 import 'package:kover/riverpod/repository/reader_repository.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'reader.g.dart';
@@ -141,6 +142,9 @@ Stream<ChapterModel?> prevChapter(
   required int chapterId,
   int? readingListId,
 }) {
+  // A local book is a single chapter.
+  if (chapterId.isLocalBook) return Stream.value(null);
+
   final repo = ref.watch(readerRepositoryProvider);
   return repo
       .watchPrevChapter(
@@ -158,6 +162,9 @@ Stream<ChapterModel?> nextChapter(
   required int chapterId,
   int? readingListId,
 }) {
+  // A local book is a single chapter.
+  if (chapterId.isLocalBook) return Stream.value(null);
+
   final repo = ref.watch(readerRepositoryProvider);
   return repo
       .watchNextChapter(

@@ -38,8 +38,8 @@ void main() {
       final container = await initializeApp(tester);
 
       await takePageScreenshot(
-        "home",
-        route: const HomeRoute().location,
+        "library",
+        route: const LibraryRoute().location,
         tester: tester,
         container: container,
         binding: binding,
@@ -47,15 +47,15 @@ void main() {
 
       await takePageScreenshot(
         "want_to_read",
-        route: const WantToReadRoute().location,
+        route: const FavoritesRoute().location,
         tester: tester,
         container: container,
         binding: binding,
       );
 
       await takePageScreenshot(
-        "menu",
-        route: const MenuRoute().location,
+        "libraries",
+        route: const LibrariesRoute().location,
         tester: tester,
         container: container,
         binding: binding,
@@ -64,14 +64,6 @@ void main() {
       await takePageScreenshot(
         "settings",
         route: const SettingsRoute().location,
-        tester: tester,
-        container: container,
-        binding: binding,
-      );
-
-      await takePageScreenshot(
-        'all_series',
-        route: const AllSeriesRoute().location,
         tester: tester,
         container: container,
         binding: binding,

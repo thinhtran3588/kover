@@ -9026,6 +9026,1525 @@ class Shape47 extends i0.VersionedTable {
       columnsByName['sort_order']! as i1.GeneratedColumn<int>;
 }
 
+final class Schema16 extends i0.VersionedSchema {
+  Schema16({required super.database}) : super(version: 16);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    riverpodStorage,
+    libraries,
+    series,
+    seriesMetadata,
+    seriesCovers,
+    people,
+    genres,
+    tags,
+    seriesPeopleRoles,
+    seriesGenres,
+    seriesTags,
+    volumes,
+    volumeCovers,
+    chapters,
+    chapterCovers,
+    chapterPeopleRoles,
+    chapterGenres,
+    chapterTags,
+    readingProgress,
+    bookChapters,
+    wantToRead,
+    bookmarks,
+    downloadedPages,
+    serverSettings,
+    collections,
+    collectionSeries,
+    collectionCovers,
+    readingLists,
+    readingListsChapters,
+    readingListCovers,
+    sidenav,
+    smartFilters,
+    dashboard,
+    onDeckRemoval,
+    fonts,
+    smartFilterSeries,
+    smartFilterReadingList,
+    smartFilterPerson,
+    serverFonts,
+    localBooks,
+  ];
+  late final Shape0 riverpodStorage = Shape0(
+    source: i0.VersionedTable(
+      entityName: 'riverpod_storage',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_0, _column_1, _column_2, _column_3],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape22 libraries = Shape22(
+    source: i0.VersionedTable(
+      entityName: 'libraries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_5,
+        _column_6,
+        _column_77,
+        _column_78,
+        _column_79,
+        _column_80,
+        _column_81,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape27 series = Shape27(
+    source: i0.VersionedTable(
+      entityName: 'series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, library_id)'],
+      columns: [
+        _column_4,
+        _column_7,
+        _column_5,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_88,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape30 seriesMetadata = Shape30(
+    source: i0.VersionedTable(
+      entityName: 'series_metadata',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(series_id)'],
+      columns: [
+        _column_4,
+        _column_25,
+        _column_26,
+        _column_89,
+        _column_90,
+        _column_49,
+        _column_91,
+        _column_92,
+        _column_93,
+        _column_94,
+        _column_30,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 seriesCovers = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'series_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape31 people = Shape31(
+    source: i0.VersionedTable(
+      entityName: 'people',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_5,
+        _column_17,
+        _column_18,
+        _column_47,
+        _column_95,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 genres = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_4, _column_32],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 tags = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_4, _column_32],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 seriesPeopleRoles = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'series_people_roles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, person_id, role)'],
+      columns: [_column_33, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 seriesGenres = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'series_genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, genre_id)'],
+      columns: [_column_33, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 seriesTags = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'series_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, tag_id)'],
+      columns: [_column_33, _column_37],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape10 volumes = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'volumes',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, series_id)'],
+      columns: [
+        _column_4,
+        _column_25,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_13,
+        _column_41,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_22,
+        _column_42,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 volumeCovers = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'volume_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(volume_id)'],
+      columns: [_column_43, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape43 chapters = Shape43(
+    source: i0.VersionedTable(
+      entityName: 'chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, volume_id, series_id)'],
+      columns: [
+        _column_4,
+        _column_44,
+        _column_25,
+        _column_45,
+        _column_46,
+        _column_47,
+        _column_26,
+        _column_48,
+        _column_11,
+        _column_49,
+        _column_38,
+        _column_39,
+        _column_50,
+        _column_41,
+        _column_51,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_89,
+        _column_17,
+        _column_18,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_93,
+        _column_94,
+        _column_61,
+        _column_110,
+        _column_88,
+        _column_22,
+        _column_42,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape13 chapterCovers = Shape13(
+    source: i0.VersionedTable(
+      entityName: 'chapter_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id)'],
+      columns: [_column_56, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape33 chapterPeopleRoles = Shape33(
+    source: i0.VersionedTable(
+      entityName: 'chapter_people_roles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, person_id, role)'],
+      columns: [_column_56, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape34 chapterGenres = Shape34(
+    source: i0.VersionedTable(
+      entityName: 'chapter_genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, genre_id)'],
+      columns: [_column_56, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape35 chapterTags = Shape35(
+    source: i0.VersionedTable(
+      entityName: 'chapter_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, tag_id)'],
+      columns: [_column_56, _column_37],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape14 readingProgress = Shape14(
+    source: i0.VersionedTable(
+      entityName: 'reading_progress',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id)'],
+      columns: [
+        _column_56,
+        _column_44,
+        _column_57,
+        _column_58,
+        _column_59,
+        _column_60,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape15 bookChapters = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'book_chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, page, title)'],
+      columns: [_column_56, _column_65, _column_66, _column_67],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape16 wantToRead = Shape16(
+    source: i0.VersionedTable(
+      entityName: 'want_to_read',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_68, _column_64],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape44 bookmarks = Shape44(
+    source: i0.VersionedTable(
+      entityName: 'bookmarks',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['UNIQUE(chapter_id, page, x_path, image_offset)'],
+      columns: [
+        _column_96,
+        _column_111,
+        _column_25,
+        _column_44,
+        _column_56,
+        _column_66,
+        _column_112,
+        _column_113,
+        _column_62,
+        _column_64,
+        _column_114,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 downloadedPages = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'downloaded_pages',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, page)'],
+      columns: [_column_56, _column_66, _column_69, _column_62, _column_70],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 serverSettings = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'server_settings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_0, _column_71, _column_72, _column_73],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 collections = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'collections',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_65,
+        _column_26,
+        _column_17,
+        _column_18,
+        _column_74,
+        _column_75,
+        _column_62,
+        _column_63,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape20 collectionSeries = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'collection_series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(collection_id, series_id)'],
+      columns: [_column_76, _column_25],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape21 collectionCovers = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'collection_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(collection_id)'],
+      columns: [_column_76, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape23 readingLists = Shape23(
+    source: i0.VersionedTable(
+      entityName: 'reading_lists',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_65,
+        _column_26,
+        _column_17,
+        _column_18,
+        _column_74,
+        _column_82,
+        _column_24,
+        _column_62,
+        _column_63,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape24 readingListsChapters = Shape24(
+    source: i0.VersionedTable(
+      entityName: 'reading_lists_chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(reading_list_id, chapter_id)'],
+      columns: [_column_83, _column_56, _column_84],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape25 readingListCovers = Shape25(
+    source: i0.VersionedTable(
+      entityName: 'reading_list_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(reading_list_id)'],
+      columns: [_column_83, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape26 sidenav = Shape26(
+    source: i0.VersionedTable(
+      entityName: 'sidenav',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_84,
+        _column_85,
+        _column_86,
+        _column_87,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape37 smartFilters = Shape37(
+    source: i0.VersionedTable(
+      entityName: 'smart_filters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_101,
+        _column_102,
+        _column_63,
+        _column_62,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape38 dashboard = Shape38(
+    source: i0.VersionedTable(
+      entityName: 'dashboard',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_84,
+        _column_85,
+        _column_6,
+        _column_103,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape29 onDeckRemoval = Shape29(
+    source: i0.VersionedTable(
+      entityName: 'on_deck_removal',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_64, _column_62],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape36 fonts = Shape36(
+    source: i0.VersionedTable(
+      entityName: 'fonts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['UNIQUE(url)'],
+      columns: [
+        _column_96,
+        _column_97,
+        _column_40,
+        _column_98,
+        _column_99,
+        _column_69,
+        _column_100,
+        _column_62,
+        _column_70,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape45 smartFilterSeries = Shape45(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, series_id)'],
+      columns: [_column_104, _column_25, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape46 smartFilterReadingList = Shape46(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_reading_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, reading_list_id)'],
+      columns: [_column_104, _column_83, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape47 smartFilterPerson = Shape47(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_person',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, person_id)'],
+      columns: [_column_104, _column_105, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape42 serverFonts = Shape42(
+    source: i0.VersionedTable(
+      entityName: 'server_fonts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_97,
+        _column_40,
+        _column_106,
+        _column_107,
+        _column_108,
+        _column_109,
+        _column_69,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape48 localBooks = Shape48(
+    source: i0.VersionedTable(
+      entityName: 'local_books',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_96,
+        _column_65,
+        _column_116,
+        _column_49,
+        _column_11,
+        _column_117,
+        _column_118,
+        _column_119,
+        _column_120,
+        _column_121,
+        _column_41,
+        _column_122,
+        _column_59,
+        _column_60,
+        _column_123,
+        _column_62,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+}
+
+class Shape48 extends i0.VersionedTable {
+  Shape48({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get title =>
+      columnsByName['title']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get author =>
+      columnsByName['author']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get language =>
+      columnsByName['language']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get format =>
+      columnsByName['format']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get source =>
+      columnsByName['source']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get remoteId =>
+      columnsByName['remote_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get fileName =>
+      columnsByName['file_name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get filePath =>
+      columnsByName['file_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get fileSize =>
+      columnsByName['file_size']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get pages =>
+      columnsByName['pages']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<i2.Uint8List> get cover =>
+      columnsByName['cover']! as i1.GeneratedColumn<i2.Uint8List>;
+  i1.GeneratedColumn<int> get pagesRead =>
+      columnsByName['pages_read']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get bookScrollId =>
+      columnsByName['book_scroll_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get lastRead =>
+      columnsByName['last_read']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get created =>
+      columnsByName['created']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_116(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'author',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_117(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'source',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_118(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'remote_id',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_119(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'file_name',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_120(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'file_path',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_121(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'file_size',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<i2.Uint8List> _column_122(String aliasedName) =>
+    i1.GeneratedColumn<i2.Uint8List>(
+      'cover',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.blob,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_123(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'last_read',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
+
+final class Schema17 extends i0.VersionedSchema {
+  Schema17({required super.database}) : super(version: 17);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    riverpodStorage,
+    libraries,
+    series,
+    seriesMetadata,
+    seriesCovers,
+    people,
+    genres,
+    tags,
+    seriesPeopleRoles,
+    seriesGenres,
+    seriesTags,
+    volumes,
+    volumeCovers,
+    chapters,
+    chapterCovers,
+    chapterPeopleRoles,
+    chapterGenres,
+    chapterTags,
+    readingProgress,
+    bookChapters,
+    wantToRead,
+    bookmarks,
+    downloadedPages,
+    serverSettings,
+    collections,
+    collectionSeries,
+    collectionCovers,
+    readingLists,
+    readingListsChapters,
+    readingListCovers,
+    sidenav,
+    smartFilters,
+    dashboard,
+    onDeckRemoval,
+    fonts,
+    smartFilterSeries,
+    smartFilterReadingList,
+    smartFilterPerson,
+    serverFonts,
+    localBooks,
+  ];
+  late final Shape0 riverpodStorage = Shape0(
+    source: i0.VersionedTable(
+      entityName: 'riverpod_storage',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_0, _column_1, _column_2, _column_3],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape22 libraries = Shape22(
+    source: i0.VersionedTable(
+      entityName: 'libraries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_5,
+        _column_6,
+        _column_77,
+        _column_78,
+        _column_79,
+        _column_80,
+        _column_81,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape27 series = Shape27(
+    source: i0.VersionedTable(
+      entityName: 'series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, library_id)'],
+      columns: [
+        _column_4,
+        _column_7,
+        _column_5,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_88,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape30 seriesMetadata = Shape30(
+    source: i0.VersionedTable(
+      entityName: 'series_metadata',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(series_id)'],
+      columns: [
+        _column_4,
+        _column_25,
+        _column_26,
+        _column_89,
+        _column_90,
+        _column_49,
+        _column_91,
+        _column_92,
+        _column_93,
+        _column_94,
+        _column_30,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 seriesCovers = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'series_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape31 people = Shape31(
+    source: i0.VersionedTable(
+      entityName: 'people',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_5,
+        _column_17,
+        _column_18,
+        _column_47,
+        _column_95,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 genres = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_4, _column_32],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 tags = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_4, _column_32],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 seriesPeopleRoles = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'series_people_roles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, person_id, role)'],
+      columns: [_column_33, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 seriesGenres = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'series_genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, genre_id)'],
+      columns: [_column_33, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 seriesTags = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'series_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_metadata_id, tag_id)'],
+      columns: [_column_33, _column_37],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape10 volumes = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'volumes',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, series_id)'],
+      columns: [
+        _column_4,
+        _column_25,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_13,
+        _column_41,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_22,
+        _column_42,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 volumeCovers = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'volume_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(volume_id)'],
+      columns: [_column_43, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape43 chapters = Shape43(
+    source: i0.VersionedTable(
+      entityName: 'chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'UNIQUE(id, volume_id, series_id)'],
+      columns: [
+        _column_4,
+        _column_44,
+        _column_25,
+        _column_45,
+        _column_46,
+        _column_47,
+        _column_26,
+        _column_48,
+        _column_11,
+        _column_49,
+        _column_38,
+        _column_39,
+        _column_50,
+        _column_41,
+        _column_51,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_89,
+        _column_17,
+        _column_18,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_93,
+        _column_94,
+        _column_61,
+        _column_110,
+        _column_88,
+        _column_22,
+        _column_42,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape13 chapterCovers = Shape13(
+    source: i0.VersionedTable(
+      entityName: 'chapter_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id)'],
+      columns: [_column_56, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape33 chapterPeopleRoles = Shape33(
+    source: i0.VersionedTable(
+      entityName: 'chapter_people_roles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, person_id, role)'],
+      columns: [_column_56, _column_34, _column_35],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape34 chapterGenres = Shape34(
+    source: i0.VersionedTable(
+      entityName: 'chapter_genres',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, genre_id)'],
+      columns: [_column_56, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape35 chapterTags = Shape35(
+    source: i0.VersionedTable(
+      entityName: 'chapter_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, tag_id)'],
+      columns: [_column_56, _column_37],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape14 readingProgress = Shape14(
+    source: i0.VersionedTable(
+      entityName: 'reading_progress',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id)'],
+      columns: [
+        _column_56,
+        _column_44,
+        _column_57,
+        _column_58,
+        _column_59,
+        _column_60,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape15 bookChapters = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'book_chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, page, title)'],
+      columns: [_column_56, _column_65, _column_66, _column_67],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape16 wantToRead = Shape16(
+    source: i0.VersionedTable(
+      entityName: 'want_to_read',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_68, _column_64],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape44 bookmarks = Shape44(
+    source: i0.VersionedTable(
+      entityName: 'bookmarks',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['UNIQUE(chapter_id, page, x_path, image_offset)'],
+      columns: [
+        _column_96,
+        _column_111,
+        _column_25,
+        _column_44,
+        _column_56,
+        _column_66,
+        _column_112,
+        _column_113,
+        _column_62,
+        _column_64,
+        _column_114,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 downloadedPages = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'downloaded_pages',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(chapter_id, page)'],
+      columns: [_column_56, _column_66, _column_69, _column_62, _column_70],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 serverSettings = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'server_settings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_0, _column_71, _column_72, _column_73],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 collections = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'collections',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_65,
+        _column_26,
+        _column_17,
+        _column_18,
+        _column_74,
+        _column_75,
+        _column_62,
+        _column_63,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape20 collectionSeries = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'collection_series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(collection_id, series_id)'],
+      columns: [_column_76, _column_25],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape21 collectionCovers = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'collection_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(collection_id)'],
+      columns: [_column_76, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape23 readingLists = Shape23(
+    source: i0.VersionedTable(
+      entityName: 'reading_lists',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_65,
+        _column_26,
+        _column_17,
+        _column_18,
+        _column_74,
+        _column_82,
+        _column_24,
+        _column_62,
+        _column_63,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape24 readingListsChapters = Shape24(
+    source: i0.VersionedTable(
+      entityName: 'reading_lists_chapters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(reading_list_id, chapter_id)'],
+      columns: [_column_83, _column_56, _column_84],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape25 readingListCovers = Shape25(
+    source: i0.VersionedTable(
+      entityName: 'reading_list_covers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(reading_list_id)'],
+      columns: [_column_83, _column_31],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape26 sidenav = Shape26(
+    source: i0.VersionedTable(
+      entityName: 'sidenav',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_84,
+        _column_85,
+        _column_86,
+        _column_87,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape37 smartFilters = Shape37(
+    source: i0.VersionedTable(
+      entityName: 'smart_filters',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_101,
+        _column_102,
+        _column_63,
+        _column_62,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape38 dashboard = Shape38(
+    source: i0.VersionedTable(
+      entityName: 'dashboard',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_40,
+        _column_84,
+        _column_85,
+        _column_6,
+        _column_103,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape29 onDeckRemoval = Shape29(
+    source: i0.VersionedTable(
+      entityName: 'on_deck_removal',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(series_id)'],
+      columns: [_column_25, _column_64, _column_62],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape36 fonts = Shape36(
+    source: i0.VersionedTable(
+      entityName: 'fonts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['UNIQUE(url)'],
+      columns: [
+        _column_96,
+        _column_97,
+        _column_40,
+        _column_98,
+        _column_99,
+        _column_69,
+        _column_100,
+        _column_62,
+        _column_70,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape45 smartFilterSeries = Shape45(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_series',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, series_id)'],
+      columns: [_column_104, _column_25, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape46 smartFilterReadingList = Shape46(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_reading_list',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, reading_list_id)'],
+      columns: [_column_104, _column_83, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape47 smartFilterPerson = Shape47(
+    source: i0.VersionedTable(
+      entityName: 'smart_filter_person',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(smart_filter_id, person_id)'],
+      columns: [_column_104, _column_105, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape42 serverFonts = Shape42(
+    source: i0.VersionedTable(
+      entityName: 'server_fonts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_4,
+        _column_97,
+        _column_40,
+        _column_106,
+        _column_107,
+        _column_108,
+        _column_109,
+        _column_69,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape49 localBooks = Shape49(
+    source: i0.VersionedTable(
+      entityName: 'local_books',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_96,
+        _column_65,
+        _column_116,
+        _column_49,
+        _column_11,
+        _column_117,
+        _column_118,
+        _column_119,
+        _column_120,
+        _column_121,
+        _column_41,
+        _column_122,
+        _column_59,
+        _column_60,
+        _column_123,
+        _column_124,
+        _column_62,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+}
+
+class Shape49 extends i0.VersionedTable {
+  Shape49({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get title =>
+      columnsByName['title']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get author =>
+      columnsByName['author']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get language =>
+      columnsByName['language']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get format =>
+      columnsByName['format']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get source =>
+      columnsByName['source']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get remoteId =>
+      columnsByName['remote_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get fileName =>
+      columnsByName['file_name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get filePath =>
+      columnsByName['file_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get fileSize =>
+      columnsByName['file_size']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get pages =>
+      columnsByName['pages']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<i2.Uint8List> get cover =>
+      columnsByName['cover']! as i1.GeneratedColumn<i2.Uint8List>;
+  i1.GeneratedColumn<int> get pagesRead =>
+      columnsByName['pages_read']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get bookScrollId =>
+      columnsByName['book_scroll_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get lastRead =>
+      columnsByName['last_read']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get isFavorite =>
+      columnsByName['is_favorite']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get created =>
+      columnsByName['created']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_124(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'is_favorite',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1))',
+      defaultValue: const i1.CustomExpression('0'),
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -9041,6 +10560,8 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema13 schema) from12To13,
   required Future<void> Function(i1.Migrator m, Schema14 schema) from13To14,
   required Future<void> Function(i1.Migrator m, Schema15 schema) from14To15,
+  required Future<void> Function(i1.Migrator m, Schema16 schema) from15To16,
+  required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -9114,6 +10635,16 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from14To15(migrator, schema);
         return 15;
+      case 15:
+        final schema = Schema16(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from15To16(migrator, schema);
+        return 16;
+      case 16:
+        final schema = Schema17(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from16To17(migrator, schema);
+        return 17;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -9135,6 +10666,8 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema13 schema) from12To13,
   required Future<void> Function(i1.Migrator m, Schema14 schema) from13To14,
   required Future<void> Function(i1.Migrator m, Schema15 schema) from14To15,
+  required Future<void> Function(i1.Migrator m, Schema16 schema) from15To16,
+  required Future<void> Function(i1.Migrator m, Schema17 schema) from16To17,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -9151,5 +10684,7 @@ i1.OnUpgrade stepByStep({
     from12To13: from12To13,
     from13To14: from13To14,
     from14To15: from14To15,
+    from15To16: from15To16,
+    from16To17: from16To17,
   ),
 );

@@ -24,7 +24,7 @@
     "@home": {
         "description": "Label for the home page"
     },
-    "wantToRead": "Want To Read",
+    "wantToRead": "Favorites",
     "@wantToRead": {
         "description": "Label for the want to read shelf"
     },
@@ -55,6 +55,10 @@
     "more": "More",
     "@more": {
         "description": "Label for the more section"
+    },
+    "downloads": "Downloads",
+    "@downloads": {
+        "description": "Label for the downloads shortcut"
     },
     "downloadQueue": "Download Queue",
     "@downloadQueue": {
@@ -414,11 +418,11 @@
     "@imIn": {
         "description": "Label for the accept button in the monitoring opt-out dialog"
     },
-    "addToWantToRead": "Add to Want to Read",
+    "addToWantToRead": "Add to favorites",
     "@addToWantToRead": {
         "description": "Label for the add to want to read context menu item"
     },
-    "removeFromWantToRead": "Remove from Want to Read",
+    "removeFromWantToRead": "Remove from favorites",
     "@removeFromWantToRead": {
         "description": "Label for the remove from want to read context menu item"
     },
@@ -1224,5 +1228,323 @@
     "readAloudNotificationChannel": "Read aloud playback",
     "@readAloudNotificationChannel": {
         "description": "Name of the notification channel for the media controls shown while reading aloud"
+    },
+    "onThisDevice": "On this device",
+    "@onThisDevice": {
+        "description": "Label for the on-device library destination and page title"
+    },
+    "addBooks": "Add books",
+    "@addBooks": {
+        "description": "Label for the button that adds books to the on-device library"
+    },
+    "importFiles": "Import files",
+    "@importFiles": {
+        "description": "Label for the action that imports book files from the device"
+    },
+    "importFilesSubtitle": "EPUB, PDF, CBZ",
+    "@importFilesSubtitle": {
+        "description": "Subtitle listing the book file types that can be imported"
+    },
+    "importingProgress": "Importing {done} of {total}…",
+    "@importingProgress": {
+        "description": "Progress text shown while book files are imported",
+        "placeholders": {
+            "done": {
+                "description": "Number of files imported so far",
+                "type": "int",
+                "example": "2"
+            },
+            "total": {
+                "description": "Total number of files being imported",
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "importedBooks": "{count, plural, =1{Imported 1 book} other{Imported {count} books}}",
+    "@importedBooks": {
+        "description": "Part of the import summary: how many books were imported",
+        "placeholders": {
+            "count": {
+                "description": "Number of books imported",
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "importSkippedDuplicates": "{count} already in library",
+    "@importSkippedDuplicates": {
+        "description": "Part of the import summary: how many files were already in the library",
+        "placeholders": {
+            "count": {
+                "description": "Number of duplicate files",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "importSkippedUnsupported": "{count} unsupported",
+    "@importSkippedUnsupported": {
+        "description": "Part of the import summary: how many files have an unsupported format",
+        "placeholders": {
+            "count": {
+                "description": "Number of unsupported files",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "importFailedCount": "{count} failed",
+    "@importFailedCount": {
+        "description": "Part of the import summary: how many files could not be imported",
+        "placeholders": {
+            "count": {
+                "description": "Number of files that failed",
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "open": "Open",
+    "@open": {
+        "description": "Label for the action that opens an item"
+    },
+    "localLibraryEmptyTitle": "No books on this device yet",
+    "@localLibraryEmptyTitle": {
+        "description": "Title of the empty on-device library"
+    },
+    "localLibraryEmptyDescription": "Import EPUB, PDF or CBZ files to read them here, with or without a server.",
+    "@localLibraryEmptyDescription": {
+        "description": "Description of the empty on-device library"
+    },
+    "noMatchingBooks": "No books match your filter",
+    "@noMatchingBooks": {
+        "description": "Message shown when the on-device library filter has no results"
+    },
+    "noFavoritesTitle": "No favorites yet",
+    "@noFavoritesTitle": {
+        "description": "Title of an empty favorites tab"
+    },
+    "noFavoritesDescription": "Long press a book and choose Add to favorites to find it here.",
+    "@noFavoritesDescription": {
+        "description": "Description of an empty favorites tab"
+    },
+    "bookInfo": "Book info",
+    "@bookInfo": {
+        "description": "Label for the action that shows details about an on-device book"
+    },
+    "deleteBook": "Delete book",
+    "@deleteBook": {
+        "description": "Label for the action that deletes an on-device book"
+    },
+    "deleteBookConfirm": "Delete \"{title}\" from this device? This cannot be undone.",
+    "@deleteBookConfirm": {
+        "description": "Confirmation text before deleting an on-device book",
+        "placeholders": {
+            "title": {
+                "description": "Title of the book",
+                "type": "String",
+                "example": "Dune"
+            }
+        }
+    },
+    "bookDeleted": "Deleted \"{title}\"",
+    "@bookDeleted": {
+        "description": "Snackbar text shown after an on-device book was deleted",
+        "placeholders": {
+            "title": {
+                "description": "Title of the book",
+                "type": "String",
+                "example": "Dune"
+            }
+        }
+    },
+    "author": "Author",
+    "@author": {
+        "description": "Label for the author of a book"
+    },
+    "bookFormat": "Format",
+    "@bookFormat": {
+        "description": "Label for the file format of a book"
+    },
+    "bookFileName": "File name",
+    "@bookFileName": {
+        "description": "Label for the file name of a book"
+    },
+    "bookFileSize": "File size",
+    "@bookFileSize": {
+        "description": "Label for the file size of a book"
+    },
+    "bookSource": "Source",
+    "@bookSource": {
+        "description": "Label for where a book comes from"
+    },
+    "sourceDevice": "This device",
+    "@sourceDevice": {
+        "description": "Source label for books imported from this device"
+    },
+    "sourceGoogleDrive": "Google Drive",
+    "@sourceGoogleDrive": {
+        "description": "Source label for books downloaded from Google Drive"
+    },
+    "chooseSourceDescription": "Connect to a Kavita server, or import books to read them on this device.",
+    "@chooseSourceDescription": {
+        "description": "Description shown on server pages when no server is configured"
+    },
+    "connectKavitaServer": "Connect to Kavita server",
+    "@connectKavitaServer": {
+        "description": "Label for the button that opens the server settings"
+    },
+    "allBooks": "All books",
+    "@allBooks": {
+        "description": "Header of the list of all books in the on-device library"
+    },
+    "myDrive": "My Drive",
+    "@myDrive": {
+        "description": "Segment label for the files of the signed in Google Drive account"
+    },
+    "sharedWithMe": "Shared with me",
+    "@sharedWithMe": {
+        "description": "Segment label for the files shared with the Google Drive account"
+    },
+    "signInWithGoogle": "Sign in with Google",
+    "@signInWithGoogle": {
+        "description": "Button that signs in to Google Drive"
+    },
+    "signOutGoogle": "Sign out",
+    "@signOutGoogle": {
+        "description": "Menu item that signs out of Google Drive"
+    },
+    "driveSignedOutTitle": "Read books from Google Drive",
+    "@driveSignedOutTitle": {
+        "description": "Title shown when not signed in to Google Drive"
+    },
+    "driveSignedOutDescription": "Kover only asks for read-only access. Books you open are downloaded to this device.",
+    "@driveSignedOutDescription": {
+        "description": "Description shown when not signed in to Google Drive"
+    },
+    "driveNotConfiguredTitle": "Google Drive isn't set up in this build",
+    "@driveNotConfiguredTitle": {
+        "description": "Title shown when the build has no Google OAuth client IDs"
+    },
+    "driveNotConfiguredDescription": "Building Kover with Google OAuth client IDs enables browsing Google Drive. See docs/google-drive-setup.md.",
+    "@driveNotConfiguredDescription": {
+        "description": "Description shown when the build has no Google OAuth client IDs"
+    },
+    "driveNotSupported": "Google Drive is available on Android and iOS",
+    "@driveNotSupported": {
+        "description": "Shown on platforms without Google Drive support"
+    },
+    "driveNotSetUp": "Not set up",
+    "@driveNotSetUp": {
+        "description": "Subtitle of the Google Drive entry when the build has no OAuth client IDs"
+    },
+    "driveSubtitle": "Browse and download books",
+    "@driveSubtitle": {
+        "description": "Subtitle of the Google Drive entry in the add books sheet"
+    },
+    "browseGoogleDrive": "Browse Google Drive",
+    "@browseGoogleDrive": {
+        "description": "Button that opens the Google Drive browser"
+    },
+    "driveEmptyFolder": "No supported books here",
+    "@driveEmptyFolder": {
+        "description": "Shown when a Google Drive folder has no folders or supported books"
+    },
+    "driveOffline": "You're offline. Downloaded books are still in the Google Drive tab.",
+    "@driveOffline": {
+        "description": "Shown when Google Drive cannot be reached"
+    },
+    "driveLoadError": "Could not load Google Drive",
+    "@driveLoadError": {
+        "description": "Shown when listing Google Drive failed"
+    },
+    "searchDrive": "Search Google Drive",
+    "@searchDrive": {
+        "description": "Hint of the Google Drive search field"
+    },
+    "downloadedBook": "Downloaded {name}",
+    "@downloadedBook": {
+        "description": "Snackbar shown when a book finished downloading from Google Drive",
+        "placeholders": {
+            "name": { "type": "String" }
+        }
+    },
+    "cancelDownload": "Cancel download",
+    "@cancelDownload": {
+        "description": "Tooltip of the button that cancels a download"
+    },
+    "sourceAll": "All",
+    "@sourceAll": {
+        "description": "Filter chip that shows books from every source"
+    },
+    "library": "Library",
+    "@library": {
+        "description": "Label of the library destination and page title"
+    },
+    "driveLibraryEmptyTitle": "No downloaded books yet",
+    "@driveLibraryEmptyTitle": {
+        "description": "Title of the empty Google Drive library tab"
+    },
+    "driveLibraryEmptyDescription": "Browse Google Drive and download books to read them offline.",
+    "@driveLibraryEmptyDescription": {
+        "description": "Description of the empty Google Drive library tab"
+    },
+    "sourceNotConnected": "Not connected",
+    "@sourceNotConnected": {
+        "description": "Status of a reading source that has not been set up yet"
+    },
+    "kavitaConnectDescription": "Connect to your Kavita server to read its libraries.",
+    "@kavitaConnectDescription": {
+        "description": "Description shown where Kavita content would appear when no server is connected"
+    },
+    "sourceKavita": "Kavita",
+    "@sourceKavita": {
+        "description": "Name of the Kavita server reading source"
+    },
+    "sourceNotAvailable": "Not available on this platform",
+    "@sourceNotAvailable": {
+        "description": "Shown when a reading source cannot be used on this platform"
+    },
+    "storage": "Storage",
+    "@storage": {
+        "description": "Title of the settings card about on-device storage"
+    },
+    "googleAccount": "Google account",
+    "@googleAccount": {
+        "description": "Title of the settings card about the Google Drive account"
+    },
+    "deviceStorageSummary": "{count, plural, =1{1 book} other{{count} books}} · {size}",
+    "@deviceStorageSummary": {
+        "description": "Summary of the books imported on this device",
+        "placeholders": {
+            "count": {
+                "description": "Number of books",
+                "type": "int",
+                "example": "3"
+            },
+            "size": {
+                "description": "Total size of the books",
+                "type": "String",
+                "example": "12.3 MB"
+            }
+        }
+    },
+    "onboardingKavitaDescription": "Connect your Kavita server to read your manga, comics and books, with progress synced.",
+    "onboardingDriveDescription": "Download books from your Google Drive and read them anywhere, even offline.",
+    "onboardingDeviceDescription": "Import EPUB, PDF and comic files already on this device and read them right away.",
+    "onboardingSetupHint": "Set these up anytime from Library or Settings.",
+    "onboardingSkip": "Skip",
+    "onboardingNext": "Next",
+    "onboardingGetStarted": "Get started",
+    "searchAllSources": "Search all sources",
+    "noSearchResults": "No results",
+    "noCollections": "No collections yet",
+    "@noCollections": {
+        "description": "Shown when the Kavita account has no collections"
+    },
+    "noReadingLists": "No reading lists yet",
+    "@noReadingLists": {
+        "description": "Shown when the Kavita account has no reading lists"
     }
 }

@@ -1,3 +1,4 @@
+import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/models/collection_model.dart';
 import 'package:kover/widgets/cards/collection_card.dart';
 import 'package:kover/widgets/list_page/entities_list_page.dart';
@@ -26,6 +27,7 @@ class CollectionsListPage extends StatelessWidget {
       filterController: controller,
       items: collections,
       sortMenu: sortMenu,
+      emptyMessage: AppLocalizations.of(context).noCollections,
       gridBuilder: (context, collection) => CollectionCard(
         key: ValueKey(collection.id),
         collectionId: collection.id,

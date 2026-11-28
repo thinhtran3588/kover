@@ -8,6 +8,7 @@ import 'package:kover/database/dao/collections_dao.dart';
 import 'package:kover/database/dao/download_dao.dart';
 import 'package:kover/database/dao/font_dao.dart';
 import 'package:kover/database/dao/libraries_dao.dart';
+import 'package:kover/database/dao/local_books_dao.dart';
 import 'package:kover/database/dao/reader_dao.dart';
 import 'package:kover/database/dao/reading_lists_dao.dart';
 import 'package:kover/database/dao/riverpod_dao.dart';
@@ -27,6 +28,7 @@ import 'package:kover/database/tables/dashboard.dart';
 import 'package:kover/database/tables/download.dart';
 import 'package:kover/database/tables/fonts.dart';
 import 'package:kover/database/tables/libraries.dart';
+import 'package:kover/database/tables/local_books.dart';
 import 'package:kover/database/tables/on_deck_removal.dart';
 import 'package:kover/database/tables/progress.dart';
 import 'package:kover/database/tables/reading_lists.dart';
@@ -45,6 +47,7 @@ import 'package:kover/models/enums/filter_type.dart';
 import 'package:kover/models/enums/font_provider.dart';
 import 'package:kover/models/enums/format.dart';
 import 'package:kover/models/enums/library_type.dart';
+import 'package:kover/models/enums/local_book_source.dart';
 import 'package:kover/models/enums/person_role.dart';
 import 'package:kover/models/enums/publication_status.dart';
 import 'package:kover/models/enums/sidenav_stream_type.dart';
@@ -94,6 +97,7 @@ part 'app_database.g.dart';
     SmartFilterReadingList,
     SmartFilterPerson,
     ServerFonts,
+    LocalBooks,
   ],
   daos: [
     StorageDao,
@@ -113,6 +117,7 @@ part 'app_database.g.dart';
     FontDao,
     SmartFiltersDao,
     ServerFontsDao,
+    LocalBooksDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -121,7 +126,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   /// Clear all content data from the database. Does not clear app state data (e.g. credentials, settings).
   /// Useful e.g. when switching user.

@@ -72,6 +72,7 @@ sealed class KoverIcons {
   static const IconData read = LucideIcons.bookOpen;
   static const IconData home = LucideIcons.home;
   static const IconData library = LucideIcons.library;
+  static const IconData device = LucideIcons.hardDrive;
   static const IconData navbar = LucideIcons.ellipsis;
   static const IconData header = LucideIcons.listPlus;
   static const IconData expandPanel = LucideIcons.panelLeftOpen;
@@ -125,6 +126,12 @@ sealed class KoverIcons {
   static const IconData markRead = LucideIcons.bookCheck;
   static const IconData markUnread = LucideIcons.bookX;
   static const IconData download = LucideIcons.download;
+  static const IconData importFiles = LucideIcons.filePlus;
+  static const IconData cloud = LucideIcons.cloud;
+  static const IconData cloudOff = LucideIcons.cloudOff;
+  static const IconData folder = LucideIcons.folder;
+  static const IconData signOut = LucideIcons.logOut;
+  static const IconData sort = LucideIcons.arrowUpDown;
   static const IconData downloading = LucideIcons.refreshCw;
   static const IconData queued = LucideIcons.hourglass;
   static const IconData downloadFailed = LucideIcons.circleAlert;

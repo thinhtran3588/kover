@@ -60,6 +60,10 @@ dependencies:
   archive: ^4.0.7
   sea_g2p:
     path: third_party/sea_g2p
+  file_picker: ^13.4.1
+  google_sign_in: ^7.2.0
+  googleapis: ^19.0.0
+  extension_google_sign_in_as_googleapis_auth: ^3.0.0
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

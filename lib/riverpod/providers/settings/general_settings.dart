@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/experimental/persist.dart';
+import 'package:kover/models/enums/reading_source.dart';
 import 'package:kover/riverpod/repository/storage_repository.dart';
 import 'package:kover/utils/locale_tag.dart';
 import 'package:kover/utils/logging.dart';
@@ -11,19 +12,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'general_settings.freezed.dart';
 part 'general_settings.g.dart';
 
-enum NavbarDestinations {
-  home(0),
-  allSeries(1),
-  wantToRead(2),
-  collections(3),
-  readingLists(4),
-  bookmarks(5);
-
-  const NavbarDestinations(this.value);
-
-  final int value;
-}
-
 @freezed
 sealed class GeneralSettingsState with _$GeneralSettingsState {
   const GeneralSettingsState._();
@@ -32,8 +20,12 @@ sealed class GeneralSettingsState with _$GeneralSettingsState {
     @Default(false) bool sendDiagnostics,
     @Default(null) String? localeString,
     @Default(null) TextDirection? textDirection,
-    @Default(<NavbarDestinations>[.home, .wantToRead])
-    List<NavbarDestinations> navbarDestinations,
+
+    /// The last tab opened on the library page.
+    @Default(null) ReadingSource? librarySource,
+
+    /// The last tab opened on the favorites page.
+    @Default(null) ReadingSource? favoritesSource,
   }) = _GeneralSettingsState;
 
   factory GeneralSettingsState.fromJson(Map<String, Object?> json) =>
@@ -90,22 +82,13 @@ class GeneralSettings extends _$GeneralSettings {
     state = AsyncData(current.copyWith(textDirection: value));
   }
 
-  Future<void> setNavbarDestinations(List<NavbarDestinations> value) async {
+  Future<void> setLibrarySource(ReadingSource value) async {
     final current = await future;
-    log.info(
-      'set navbar destinations',
-      attributes: {'value': value.map((e) => e.name)},
-    );
-    state = AsyncData(current.copyWith(navbarDestinations: value));
+    state = AsyncData(current.copyWith(librarySource: value));
   }
 
-  Future<void> resetNavbarDestinations() async {
+  Future<void> setFavoritesSource(ReadingSource value) async {
     final current = await future;
-    log.info('reset navbar destinations');
-    state = AsyncData(
-      current.copyWith(
-        navbarDestinations: const <NavbarDestinations>[.home, .wantToRead],
-      ),
-    );
+    state = AsyncData(current.copyWith(favoritesSource: value));
   }
 }

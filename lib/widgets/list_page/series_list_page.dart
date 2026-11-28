@@ -11,6 +11,18 @@ class SeriesListPage extends StatelessWidget {
   final AsyncValue<List<SeriesModel>> series;
   final Widget? sortMenu;
 
+  /// Whether to show the large app bar, see [EntitiesListPage.showAppBar].
+  final bool showAppBar;
+
+  /// Slivers shown between the filter field and the series.
+  final List<Widget> headerSlivers;
+
+  /// Whether to show the filter field, see [EntitiesListPage.showFilter].
+  final bool showFilter;
+
+  /// The layout owned by the caller, see [EntitiesListPage.isGrid].
+  final bool? isGrid;
+
   /// Hides the read action button on the grid cards.
   final bool hideAction;
 
@@ -26,6 +38,10 @@ class SeriesListPage extends StatelessWidget {
     required this.controller,
     required this.series,
     this.sortMenu,
+    this.showAppBar = true,
+    this.headerSlivers = const [],
+    this.showFilter = true,
+    this.isGrid,
     this.hideAction = false,
     this.onSeriesTap,
     this.onViewDetails,
@@ -38,6 +54,10 @@ class SeriesListPage extends StatelessWidget {
       filterController: controller,
       items: series,
       sortMenu: sortMenu,
+      showAppBar: showAppBar,
+      headerSlivers: headerSlivers,
+      showFilter: showFilter,
+      isGrid: isGrid,
       gridBuilder: (context, series) => SeriesCard(
         key: ValueKey(series.id),
         seriesId: series.id,

@@ -2,9 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/models/chapter_model.dart';
 import 'package:kover/models/enums/format.dart';
+import 'package:kover/models/enums/local_book_source.dart';
+import 'package:kover/models/local_book_model.dart';
 import 'package:kover/models/progress_model.dart';
 import 'package:kover/models/series_model.dart';
 import 'package:kover/riverpod/providers/reader/reader.dart';
+import 'package:kover/riverpod/repository/local_library_repository.dart';
 import 'package:kover/riverpod/repository/reader_repository.dart';
 import 'package:mockito/mockito.dart';
 
@@ -36,6 +39,16 @@ class _FakeReaderRepository extends Mock implements ReaderRepository {
   Future<void> saveProgress(ProgressModel progress) async {
     saves.add(progress);
   }
+}
+
+class _FakeLocalLibraryRepository extends Mock
+    implements LocalLibraryRepository {
+  final LocalBookModel book;
+
+  _FakeLocalLibraryRepository(this.book);
+
+  @override
+  Future<LocalBookModel> getBook(int id) async => book;
 }
 
 void main() {
@@ -80,5 +93,49 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 150));
 
     expect(repository.saves.last.pageNum, 1);
+  });
+  test('opens a local book without the Kavita repositories', () async {
+    final book = LocalBookModel(
+      id: 7,
+      title: 'Local',
+      author: 'Author',
+      language: 'en',
+      format: Format.epub,
+      source: LocalBookSource.device,
+      remoteId: null,
+      fileName: 'local.epub',
+      filePath: 'local_books/local.epub',
+      fileSize: 1,
+      pages: 10,
+      pagesRead: 4,
+      bookScrollId: 'scroll',
+      lastRead: DateTime(2026),
+      created: DateTime(2026),
+    );
+
+    // The Kavita repositories are not overridden: they throw without
+    // credentials, so building the reader must not touch them.
+    final container = ProviderContainer.test(
+      overrides: [
+        localLibraryRepositoryProvider.overrideWithValue(
+          _FakeLocalLibraryRepository(book),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final state = await container.read(
+      readerProvider(
+        seriesId: -7,
+        chapterId: -7,
+        readingListId: null,
+      ).future,
+    );
+
+    expect(state.initialPage, 4);
+    expect(state.bookScrollId, 'scroll');
+    expect(state.totalPages, 10);
+    expect(state.series.format, Format.epub);
+    expect(state.chapter.writers.single.name, 'Author');
   });
 }

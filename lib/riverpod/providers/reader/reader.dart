@@ -8,8 +8,10 @@ import 'package:kover/models/progress_model.dart';
 import 'package:kover/models/series_model.dart';
 import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/repository/chapters_repository.dart';
+import 'package:kover/riverpod/repository/local_library_repository.dart';
 import 'package:kover/riverpod/repository/reader_repository.dart';
 import 'package:kover/riverpod/repository/series_repository.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -38,6 +40,13 @@ Future<SeriesModel> readerSeries(
   Ref ref, {
   required int seriesId,
 }) async {
+  if (seriesId.isLocalBook) {
+    final book = await ref
+        .read(localLibraryRepositoryProvider)
+        .getBook(seriesId.localBookId);
+    return book.toSeriesModel();
+  }
+
   final repo = ref.watch(seriesRepositoryProvider);
   return repo.getSeries(seriesId: seriesId);
 }
@@ -48,6 +57,13 @@ Future<ChapterModel> readerChapter(
   required int seriesId,
   required int chapterId,
 }) async {
+  if (chapterId.isLocalBook) {
+    final book = await ref
+        .read(localLibraryRepositoryProvider)
+        .getBook(chapterId.localBookId);
+    return book.toChapterModel();
+  }
+
   final repo = ref.watch(chaptersRepositoryProvider);
   return repo.getChapter(chapterId: chapterId);
 }
@@ -58,6 +74,13 @@ Future<ProgressModel?> readerProgress(
   required int seriesId,
   required int chapterId,
 }) async {
+  if (chapterId.isLocalBook) {
+    final book = await ref
+        .read(localLibraryRepositoryProvider)
+        .getBook(chapterId.localBookId);
+    return book.toProgressModel();
+  }
+
   final repo = ref.watch(readerRepositoryProvider);
   // Read before any await: the provider can be disposed while it loads.
   final syncManager = ref.read(syncManagerProvider.notifier);
@@ -137,6 +160,17 @@ class Reader extends _$Reader {
           return;
         }
 
+        if (current.chapter.id.isLocalBook) {
+          await ref
+              .read(localLibraryRepositoryProvider)
+              .saveProgress(
+                current.chapter.id.localBookId,
+                page: targetPage,
+                scrollId: scrollId,
+              );
+          return;
+        }
+
         await ref
             .read(readerRepositoryProvider)
             .saveProgress(
@@ -170,6 +204,13 @@ class Reader extends _$Reader {
   Future<void> markComplete() async {
     if (state.isLoading) return;
     final current = await future;
+
+    if (current.chapter.id.isLocalBook) {
+      await ref
+          .read(localLibraryRepositoryProvider)
+          .markRead(current.chapter.id.localBookId);
+      return;
+    }
 
     await ref
         .read(readerRepositoryProvider)

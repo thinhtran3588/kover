@@ -69,16 +69,6 @@ class DataManagementSettings extends ConsumerWidget {
                       alignment: .center,
                       children: [
                         DatabaseClearOperationButton(
-                          asyncValue: ref.watch(reclaimSpaceProvider),
-                          text: l.reclaimSpace,
-                          icon: const Icon(KoverIcons.reclaimSpace),
-                          onPressed: () async {
-                            await ref
-                                .read(reclaimSpaceProvider.notifier)
-                                .reclaimSpace();
-                          },
-                        ),
-                        DatabaseClearOperationButton(
                           asyncValue: ref.watch(clearDownloadsProvider),
                           text: l.clearDownloads,
                           icon: const Icon(KoverIcons.clearDownloads),
@@ -146,15 +136,44 @@ class DataManagementSettings extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (!SafePlatform.isWeb)
-                const Row(
-                  mainAxisAlignment: .start,
-                  children: [
-                    DatabaseSize(),
-                  ],
-                ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class StorageSettings extends ConsumerWidget {
+  const StorageSettings({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+
+    return Card(
+      margin: .zero,
+      child: Padding(
+        padding: LayoutConstants.mediumEdgeInsets,
+        child: Column(
+          mainAxisSize: .min,
+          crossAxisAlignment: .start,
+          spacing: LayoutConstants.largePadding,
+          children: [
+            Text(
+              l.storage,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            DatabaseClearOperationButton(
+              asyncValue: ref.watch(reclaimSpaceProvider),
+              text: l.reclaimSpace,
+              icon: const Icon(KoverIcons.reclaimSpace),
+              onPressed: () async {
+                await ref.read(reclaimSpaceProvider.notifier).reclaimSpace();
+              },
+            ),
+            if (!SafePlatform.isWeb) const DatabaseSize(),
+          ],
         ),
       ),
     );

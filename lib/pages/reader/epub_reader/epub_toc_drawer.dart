@@ -7,6 +7,7 @@ import 'package:kover/riverpod/managers/sync_manager/sync_manager.dart';
 import 'package:kover/riverpod/providers/book.dart';
 import 'package:kover/riverpod/providers/reader/reader_navigation.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
+import 'package:kover/utils/extensions/int.dart';
 import 'package:kover/widgets/util/async_value.dart';
 
 class EpubTocDrawer extends HookConsumerWidget {
@@ -29,7 +30,7 @@ class EpubTocDrawer extends HookConsumerWidget {
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
+        if (!context.mounted || chapterId.isLocalBook) return;
 
         ref
             .read(syncManagerProvider.notifier)

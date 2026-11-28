@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:kover/generated/l10n/app_localizations.dart';
-import 'package:kover/pages/settings/navbar_editor.dart';
 import 'package:kover/riverpod/providers/router.dart';
 import 'package:kover/riverpod/providers/settings/general_settings.dart';
 import 'package:kover/utils/constants/kover_icons.dart';
@@ -35,7 +34,6 @@ class GeneralSettings extends ConsumerWidget {
             ),
             const _Locale(),
             const _DirectionalityOverride(),
-            const NavbarEditor(),
             const _SendDiagnostics(),
             const _LocalLogs(),
           ],
