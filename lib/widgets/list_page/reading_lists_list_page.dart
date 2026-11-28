@@ -1,3 +1,4 @@
+import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/models/reading_list_model.dart';
 import 'package:kover/widgets/cards/reading_list_card.dart';
 import 'package:kover/widgets/list_page/entities_list_page.dart';
@@ -26,6 +27,7 @@ class ReadingListsListPage extends StatelessWidget {
       filterController: controller,
       items: readingLists,
       sortMenu: sortMenu,
+      emptyMessage: AppLocalizations.of(context).noReadingLists,
       gridBuilder: (context, readingList) => ReadingListCard(
         key: ValueKey(readingList.id),
         readingListId: readingList.id,

@@ -56,6 +56,10 @@
     "@more": {
         "description": "Label for the more section"
     },
+    "downloads": "Downloads",
+    "@downloads": {
+        "description": "Label for the downloads shortcut"
+    },
     "downloadQueue": "Download Queue",
     "@downloadQueue": {
         "description": "Label for the download queue menu entry"
@@ -1525,5 +1529,22 @@
                 "example": "12.3 MB"
             }
         }
+    },
+    "onboardingKavitaDescription": "Connect your Kavita server to read your manga, comics and books, with progress synced.",
+    "onboardingDriveDescription": "Download books from your Google Drive and read them anywhere, even offline.",
+    "onboardingDeviceDescription": "Import EPUB, PDF and comic files already on this device and read them right away.",
+    "onboardingSetupHint": "Set these up anytime from Library or Settings.",
+    "onboardingSkip": "Skip",
+    "onboardingNext": "Next",
+    "onboardingGetStarted": "Get started",
+    "searchAllSources": "Search all sources",
+    "noSearchResults": "No results",
+    "noCollections": "No collections yet",
+    "@noCollections": {
+        "description": "Shown when the Kavita account has no collections"
+    },
+    "noReadingLists": "No reading lists yet",
+    "@noReadingLists": {
+        "description": "Shown when the Kavita account has no reading lists"
     }
 }

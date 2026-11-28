@@ -12,20 +12,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'general_settings.freezed.dart';
 part 'general_settings.g.dart';
 
-enum NavbarDestinations {
-  home(0),
-  allSeries(1),
-  wantToRead(2),
-  collections(3),
-  readingLists(4),
-  bookmarks(5),
-  localLibrary(6);
-
-  const NavbarDestinations(this.value);
-
-  final int value;
-}
-
 @freezed
 sealed class GeneralSettingsState with _$GeneralSettingsState {
   const GeneralSettingsState._();
@@ -34,8 +20,6 @@ sealed class GeneralSettingsState with _$GeneralSettingsState {
     @Default(false) bool sendDiagnostics,
     @Default(null) String? localeString,
     @Default(null) TextDirection? textDirection,
-    @Default(<NavbarDestinations>[.home, .localLibrary, .wantToRead])
-    List<NavbarDestinations> navbarDestinations,
 
     /// The last tab opened on the library page.
     @Default(null) ReadingSource? librarySource,
@@ -98,15 +82,6 @@ class GeneralSettings extends _$GeneralSettings {
     state = AsyncData(current.copyWith(textDirection: value));
   }
 
-  Future<void> setNavbarDestinations(List<NavbarDestinations> value) async {
-    final current = await future;
-    log.info(
-      'set navbar destinations',
-      attributes: {'value': value.map((e) => e.name)},
-    );
-    state = AsyncData(current.copyWith(navbarDestinations: value));
-  }
-
   Future<void> setLibrarySource(ReadingSource value) async {
     final current = await future;
     state = AsyncData(current.copyWith(librarySource: value));
@@ -115,19 +90,5 @@ class GeneralSettings extends _$GeneralSettings {
   Future<void> setFavoritesSource(ReadingSource value) async {
     final current = await future;
     state = AsyncData(current.copyWith(favoritesSource: value));
-  }
-
-  Future<void> resetNavbarDestinations() async {
-    final current = await future;
-    log.info('reset navbar destinations');
-    state = AsyncData(
-      current.copyWith(
-        navbarDestinations: const <NavbarDestinations>[
-          .home,
-          .localLibrary,
-          .wantToRead,
-        ],
-      ),
-    );
   }
 }

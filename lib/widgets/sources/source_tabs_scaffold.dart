@@ -14,6 +14,10 @@ class SourceTabsScaffold extends HookConsumerWidget {
   final ReadingSource? savedSource;
   final ValueChanged<ReadingSource> onSourceChanged;
   final Widget Function(ReadingSource source) tabBuilder;
+  final List<Widget>? actions;
+
+  /// Actions of the selected tab, shown before [actions].
+  final List<Widget> Function(ReadingSource source)? tabActions;
 
   const SourceTabsScaffold({
     super.key,
@@ -22,6 +26,8 @@ class SourceTabsScaffold extends HookConsumerWidget {
     required this.tabBuilder,
     this.initialSource,
     this.savedSource,
+    this.actions,
+    this.tabActions,
   });
 
   @override
@@ -63,9 +69,15 @@ class SourceTabsScaffold extends HookConsumerWidget {
       return () => controller.removeListener(listener);
     }, [controller]);
 
+    useListenable(controller);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: [
+          ...?tabActions?.call(ReadingSource.values[controller.index]),
+          ...?actions,
+        ],
         bottom: TabBar(
           controller: controller,
           tabs: [

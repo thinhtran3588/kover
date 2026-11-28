@@ -5,14 +5,30 @@ import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kover/generated/l10n/app_localizations.dart';
-import 'package:kover/riverpod/providers/settings/general_settings.dart';
+import 'package:kover/pages/onboarding/onboarding_page.dart';
 import 'package:kover/riverpod/providers/settings/oneoffs.dart';
 import 'package:kover/riverpod/providers/theme.dart' hide Theme;
-import 'package:kover/utils/extensions/navbar_destination.dart';
 import 'package:kover/utils/constants/layout_constants.dart';
 import 'package:kover/utils/safe_platform.dart';
 import 'package:kover/widgets/util/async_value.dart';
 import 'package:kover/widgets/util/monitoring_opt_out_popup.dart';
+
+/// The fixed destinations, in the order of the shell branches.
+enum _Destination {
+  library(KoverIcons.library),
+  favorites(KoverIcons.wantToRead),
+  settings(KoverIcons.settings);
+
+  const _Destination(this.icon);
+
+  final IconData icon;
+
+  String getLabel(AppLocalizations l) => switch (this) {
+    .library => l.library,
+    .favorites => l.wantToRead,
+    .settings => l.settings,
+  };
+}
 
 class NavigatorContainer extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -22,14 +38,15 @@ class NavigatorContainer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final oneOffs = ref.watch(oneOffsProvider);
-    final destinations = ref.watch(
-      generalSettingsProvider.select(
-        (value) => value.whenData(
-          (value) =>
-              value.navbarDestinations.where((d) => d.isSupported).toList(),
-        ),
-      ),
-    );
+
+    if (oneOffs.isLoading && !oneOffs.hasValue) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (oneOffs.value?.onboardingShown == false) {
+      return OnboardingPage(
+        onDone: () => ref.read(oneOffsProvider.notifier).setOnboardingShown(),
+      );
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       oneOffs.whenData((oneOffs) async {
@@ -45,67 +62,46 @@ class NavigatorContainer extends ConsumerWidget {
       });
     });
 
-    return Async(
-      asyncValue: destinations,
-      data: (destinations) {
-        final selectedIndex = _mapSelectedIndex(
-          shellIndex: navigationShell.currentIndex,
-          destinations: destinations,
-        );
-        void onDestinationSelected(int index) {
-          final shellIndex = index < destinations.length
-              ? destinations[index].value
-              : navigationShell.route.branches.length - 1;
-          navigationShell.goBranch(
-            shellIndex,
-            initialLocation: true,
-          );
-        }
+    final selectedIndex = navigationShell.currentIndex;
+    void onDestinationSelected(int index) {
+      navigationShell.goBranch(index, initialLocation: true);
+    }
 
-        return BreakpointBuilder(
-          compactBuilder: (context) {
-            return _CompactNavigationShell(
-              navigationShell: navigationShell,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-              destinations: destinations,
-            );
-          },
-          expandedBuilder: (context) {
-            return _ExpandedNavigationLayout(
-              key: const ValueKey('expanded_navigation_layout'),
-              navigationShell: navigationShell,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-              destinations: destinations,
-            );
-          },
-          largestBuilder: (context) {
-            return _ExpandedNavigationLayout(
-              key: const ValueKey('largest_navigation_layout'),
-              navigationShell: navigationShell,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-              destinations: destinations,
-              startExtended: true,
-            );
-          },
+    return BreakpointBuilder(
+      compactBuilder: (context) {
+        return _CompactNavigationShell(
+          navigationShell: navigationShell,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+        );
+      },
+      // Landscape phones and car screens get the side rail too.
+      mediumBuilder: (context) {
+        return _ExpandedNavigationLayout(
+          key: const ValueKey('expanded_navigation_layout'),
+          navigationShell: navigationShell,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+        );
+      },
+      expandedBuilder: (context) {
+        return _ExpandedNavigationLayout(
+          key: const ValueKey('expanded_navigation_layout'),
+          navigationShell: navigationShell,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+        );
+      },
+      largestBuilder: (context) {
+        return _ExpandedNavigationLayout(
+          key: const ValueKey('largest_navigation_layout'),
+          navigationShell: navigationShell,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+          startExtended: true,
         );
       },
     );
-  }
-
-  static int _mapSelectedIndex({
-    required int shellIndex,
-    required List<NavbarDestinations> destinations,
-  }) {
-    final index = destinations.indexWhere((d) => d.value == shellIndex);
-
-    if (index < 0) {
-      return destinations.length;
-    }
-
-    return index;
   }
 }
 
@@ -113,13 +109,11 @@ class _CompactNavigationShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
   final int selectedIndex;
   final void Function(int) onDestinationSelected;
-  final List<NavbarDestinations> destinations;
 
   const new({
     required this.navigationShell,
     required this.selectedIndex,
     required this.onDestinationSelected,
-    required this.destinations,
   });
 
   @override
@@ -161,16 +155,11 @@ class _CompactNavigationShell extends ConsumerWidget {
                     selectedIndex: selectedIndex,
                     onDestinationSelected: onDestinationSelected,
                     destinations: [
-                      ...destinations.map((destination) {
-                        return NavigationDestination(
+                      for (final destination in _Destination.values)
+                        NavigationDestination(
                           icon: Icon(destination.icon),
                           label: destination.getLabel(l),
-                        );
-                      }),
-                      NavigationDestination(
-                        icon: const Icon(KoverIcons.library),
-                        label: l.menu,
-                      ),
+                        ),
                     ],
                   ),
                 );
@@ -187,7 +176,6 @@ class _ExpandedNavigationLayout extends HookWidget {
   final StatefulNavigationShell navigationShell;
   final int selectedIndex;
   final void Function(int) onDestinationSelected;
-  final List<NavbarDestinations> destinations;
   final bool startExtended;
 
   const new({
@@ -195,7 +183,6 @@ class _ExpandedNavigationLayout extends HookWidget {
     required this.navigationShell,
     required this.selectedIndex,
     required this.onDestinationSelected,
-    required this.destinations,
     this.startExtended = false,
   });
 
@@ -208,6 +195,7 @@ class _ExpandedNavigationLayout extends HookWidget {
         children: [
           NavigationRail(
             extended: extended.value,
+            labelType: extended.value ? .none : .all,
             scrollable: true,
             trailingAtBottom: true,
             trailing: Padding(
@@ -226,18 +214,13 @@ class _ExpandedNavigationLayout extends HookWidget {
             selectedIndex: selectedIndex,
             onDestinationSelected: onDestinationSelected,
             destinations: [
-              ...destinations.map((destination) {
-                return NavigationRailDestination(
+              for (final destination in _Destination.values)
+                NavigationRailDestination(
                   icon: Icon(destination.icon),
                   label: Text(
                     destination.getLabel(AppLocalizations.of(context)),
                   ),
-                );
-              }),
-              NavigationRailDestination(
-                icon: const Icon(KoverIcons.library),
-                label: Text(AppLocalizations.of(context).menu),
-              ),
+                ),
             ],
           ),
           const VerticalDivider(width: 1.0, thickness: 1.0),

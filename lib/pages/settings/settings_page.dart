@@ -3,7 +3,6 @@ import 'package:kover/generated/l10n/app_localizations.dart';
 import 'package:kover/pages/settings/appearance_settings.dart';
 import 'package:kover/pages/settings/credentials_settings.dart';
 import 'package:kover/pages/settings/data_management_settings.dart';
-import 'package:kover/pages/settings/device_settings.dart';
 import 'package:kover/pages/settings/drive_settings.dart';
 import 'package:kover/pages/settings/general_settings.dart';
 import 'package:kover/pages/settings/keybinds_settings.dart';
@@ -36,7 +35,6 @@ class SettingsPage extends ConsumerWidget {
               Tab(text: l.general),
               Tab(text: l.sourceKavita),
               Tab(text: l.sourceGoogleDrive),
-              Tab(text: l.onThisDevice),
             ],
           ),
         ),
@@ -48,7 +46,7 @@ class SettingsPage extends ConsumerWidget {
                 AppearanceSettings(),
                 KeybindsSettings(),
                 StorageSettings(),
-                VersionLabel(),
+                Center(child: VersionLabel()),
               ],
             ),
             _SettingsTab(
@@ -58,7 +56,6 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             _SettingsTab(children: [DriveSettings()]),
-            _SettingsTab(children: [DeviceSettings()]),
           ],
         ),
       ),
@@ -76,8 +73,15 @@ class _SettingsTab extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverAdaptivePadding(
+          padding: const .fromLTRB(
+            LayoutConstants.mediumPadding,
+            LayoutConstants.mediumPadding,
+            LayoutConstants.mediumPadding,
+            0,
+          ),
           sliver: SliverToBoxAdapter(
             child: Column(
+              crossAxisAlignment: .stretch,
               spacing: LayoutConstants.listSpacing,
               children: children,
             ),

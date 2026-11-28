@@ -26,6 +26,31 @@ Stream<List<LocalBookModel>> localBooks(
       .watchBooks(source: source, favoritesOnly: favoritesOnly);
 }
 
+/// The downloaded and imported books whose title or author contain [query],
+/// grouped by source. Filters in Dart as SQL `LIKE` is not case-insensitive
+/// for non-ASCII text.
+@riverpod
+Future<Map<LocalBookSource, List<LocalBookModel>>> searchLocalBooks(
+  Ref ref,
+  String query,
+) async {
+  // Read the repository directly: watching the auto-dispose localBooksProvider
+  // from a one-off search read disposes it before it emits.
+  final books = await ref
+      .watch(localLibraryRepositoryProvider)
+      .watchBooks()
+      .first;
+  final needle = query.trim().toLowerCase();
+  final result = <LocalBookSource, List<LocalBookModel>>{};
+  for (final book in books) {
+    final matches =
+        book.title.toLowerCase().contains(needle) ||
+        (book.author?.toLowerCase().contains(needle) ?? false);
+    if (matches) result.putIfAbsent(book.source, () => []).add(book);
+  }
+  return result;
+}
+
 @riverpod
 Stream<List<LocalBookModel>> localContinueReading(Ref ref) {
   return ref.watch(localLibraryRepositoryProvider).watchContinueReading();
