@@ -58,8 +58,9 @@ Stream<Set<String>> driveDownloadedIds(Ref ref) {
   return ref.watch(localLibraryRepositoryProvider).watchDriveIds();
 }
 
-/// Where downloads are written before being imported.
-@riverpod
+/// Where downloads are written before being imported. Kept alive because the
+/// keep-alive [DriveDownloads] reads it.
+@Riverpod(keepAlive: true)
 Future<Directory> driveTempDirectory(Ref ref) => getTemporaryDirectory();
 
 @freezed
