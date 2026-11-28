@@ -8,7 +8,8 @@ import 'package:kover/riverpod/providers/tts/edge_tts_cache.dart';
 import 'package:kover/riverpod/providers/tts/tts_engine.dart';
 import 'package:kover/riverpod/providers/tts/vieneu/vieneu_model.dart';
 import 'package:kover/riverpod/providers/tts/vieneu/vieneu_synth.dart';
-import 'package:kover/riverpod/providers/tts/vieneu/vieneu_worker.dart';
+import 'package:kover/riverpod/providers/tts/vieneu/vieneu_worker_stub.dart'
+    if (dart.library.ffi) 'package:kover/riverpod/providers/tts/vieneu/vieneu_worker.dart';
 import 'package:kover/utils/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';

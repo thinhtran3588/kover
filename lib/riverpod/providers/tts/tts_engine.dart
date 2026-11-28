@@ -1,5 +1,5 @@
-import 'dart:ffi';
-
+import 'package:kover/riverpod/providers/tts/vieneu/vieneu_abi_stub.dart'
+    if (dart.library.ffi) 'package:kover/riverpod/providers/tts/vieneu/vieneu_abi.dart';
 import 'package:kover/utils/safe_platform.dart';
 
 /// Whether the platform has a native text-to-speech engine.
@@ -14,8 +14,7 @@ bool get edgeTtsSupported =>
 /// Whether the VieNeu offline voice can be used: its libraries are bundled for
 /// 64-bit ARM phones only.
 bool get vieneuTtsSupported =>
-    (SafePlatform.isAndroid || SafePlatform.isIOS) &&
-    (Abi.current() == Abi.androidArm64 || Abi.current() == Abi.iosArm64);
+    (SafePlatform.isAndroid || SafePlatform.isIOS) && vieneuAbiSupported;
 
 class const TtsVoice({
   required final String name,
